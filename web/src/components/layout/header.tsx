@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "@/lib/i18n";
 import { Github, Menu, X, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { isSupportedLocale, SUPPORTED_LOCALES, type Locale } from "@/lib/constants";
 
 const NAV_ITEMS = [
   { key: "timeline", href: "/timeline" },
@@ -13,11 +14,16 @@ const NAV_ITEMS = [
   { key: "layers", href: "/layers" },
 ] as const;
 
-const LOCALES = [
-  { code: "en", label: "EN" },
-  { code: "zh", label: "中文" },
-  { code: "ja", label: "日本語" },
-];
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: "EN",
+  zh: "中文",
+  ja: "日本語",
+};
+
+const LOCALES = SUPPORTED_LOCALES.map((code) => ({
+  code,
+  label: LOCALE_LABELS[code],
+}));
 
 export function Header() {
   const t = useTranslations("nav");
@@ -39,8 +45,16 @@ export function Header() {
     localStorage.setItem("theme", next ? "dark" : "light");
   }
 
-  function switchLocale(newLocale: string) {
-    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+  function switchLocale(newLocale: Locale) {
+    const segments = pathname.split("/");
+
+    if (isSupportedLocale(segments[1] ?? "")) {
+      segments[1] = newLocale;
+    } else {
+      segments.splice(1, 0, newLocale);
+    }
+
+    const newPath = segments.join("/") || `/${newLocale}`;
     window.location.href = newPath;
   }
 

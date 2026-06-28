@@ -40,6 +40,8 @@ function filenameToVersionId(filename: string): string | null {
 }
 
 function listRootChapters(): ChapterSource[] {
+  const orderMap = new Map(VERSION_ORDER.map((id, index) => [id, index]));
+
   return fs
     .readdirSync(REPO_ROOT, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -54,7 +56,10 @@ function listRootChapters(): ChapterSource[] {
       if (!fs.existsSync(codePath)) return null;
       return { id, dirName, dirPath, codePath };
     })
-    .filter((chapter): chapter is ChapterSource => chapter !== null);
+    .filter((chapter): chapter is ChapterSource => chapter !== null)
+    .sort(
+      (a, b) => (orderMap.get(a.id as any) ?? 999) - (orderMap.get(b.id as any) ?? 999)
+    );
 }
 
 function extractClasses(

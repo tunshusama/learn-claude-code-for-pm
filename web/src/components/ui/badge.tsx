@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
 const LAYER_COLORS = {
+  foundation:
+    "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300",
   tools:
     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   planning:

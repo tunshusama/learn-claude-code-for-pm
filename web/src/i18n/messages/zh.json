@@ -1,92 +1,318 @@
 {
-  "meta": { "title": "Learn Claude Code", "description": "从 0 到 1 构建 nano Claude Code-like agent，每次只加一个机制" },
-  "nav": { "home": "首页", "timeline": "学习路径", "compare": "版本对比", "layers": "架构层", "github": "GitHub" },
-  "home": { "hero_title": "Learn Claude Code", "hero_subtitle": "从 0 到 1 构建 nano Claude Code-like agent，每次只加一个机制", "start": "开始学习", "core_pattern": "核心模式", "core_pattern_desc": "所有 AI 编程 Agent 共享同一个循环：调用模型、执行工具、回传结果。生产级系统会在其上叠加策略、权限和生命周期层。", "learning_path": "学习路径", "learning_path_desc": "20 个渐进式课程，从简单循环到完整多 Agent Harness", "layers_title": "架构层次", "layers_desc": "五个正交关注点组合成完整的 Agent", "loc": "行", "learn_more": "了解更多", "versions_in_layer": "个版本", "message_flow": "消息增长", "message_flow_desc": "观察 Agent 循环执行时消息数组的增长" },
-  "version": { "loc": "行代码", "tools": "个工具", "new": "新增", "prev": "上一版", "next": "下一版", "view_source": "查看源码", "view_diff": "查看变更", "design_decisions": "设计决策", "whats_new": "新增内容", "tutorial": "教程", "simulator": "Agent 循环模拟器", "execution_flow": "执行流程", "architecture": "架构", "concept_viz": "概念可视化", "alternatives": "替代方案", "tab_learn": "学习", "tab_simulate": "模拟", "tab_code": "源码", "tab_deep_dive": "深入探索" },
-  "sim": { "play": "播放", "pause": "暂停", "step": "单步", "reset": "重置", "speed": "速度", "step_of": "/" },
-  "timeline": { "title": "学习路径", "subtitle": "s01 到 s20：渐进式 Agent Harness 设计", "layer_legend": "层次图例", "loc_growth": "代码量增长", "learn_more": "了解更多" },
+  "meta": {
+    "title": "Learn Claude Code：Agent 产品架构课",
+    "description": "面向中国 Agent 学习者和产品经理，用 Claude Code 拆解 Agent Harness 的 22 个核心章节"
+  },
+  "nav": {
+    "home": "首页",
+    "timeline": "学习路径",
+    "compare": "机制对比",
+    "layers": "架构地图",
+    "github": "GitHub"
+  },
+  "home": {
+    "hero_title": "Learn Claude Code",
+    "hero_subtitle": "给想学习 Agent、设计 Agent 产品、会 vibe coding 的刚入门读者看的 Agent 产品架构课。",
+    "start": "查看学习路径",
+    "core_pattern": "核心模式",
+    "core_pattern_desc": "一个可用 Agent 产品不是更长的 prompt，而是模型、Tool、Context、权限和任务系统一起组成的 Harness。",
+    "learning_path": "22 课学习路径",
+    "learning_path_desc": "从前置准备、LLM 基础到 Agent Loop、MCP 和多 Agent 团队，每一课只加入一个关键机制。",
+    "layers_title": "架构地图",
+    "layers_desc": "把工具、规划、记忆、并发和协作分开看，才能判断一个 Agent 产品该加什么。",
+    "loc": "行代码证据",
+    "learn_more": "进入本课",
+    "versions_in_layer": "课",
+    "message_flow": "消息如何增长",
+    "message_flow_desc": "观察模型、Tool 和 tool_result 如何在 messages[] 中来回传递。"
+  },
+  "version": {
+    "loc": "行代码证据",
+    "tools": "个 Tool",
+    "new": "新增",
+    "prev": "上一课",
+    "next": "下一课",
+    "view_source": "查看实现参考",
+    "view_diff": "查看机制变化",
+    "design_decisions": "设计判断",
+    "whats_new": "本课新增能力",
+    "tutorial": "课程正文",
+    "simulator": "Agent Loop 模拟器",
+    "execution_flow": "执行流程",
+    "architecture": "架构图",
+    "concept_viz": "机制可视化",
+    "alternatives": "替代方案",
+    "tab_learn": "学习",
+    "tab_simulate": "模拟",
+    "tab_code": "代码证据",
+    "tab_deep_dive": "深入理解",
+    "not_found": "没有找到这一课"
+  },
+  "sim": {
+    "play": "播放",
+    "pause": "暂停",
+    "step": "单步",
+    "reset": "重置",
+    "speed": "速度",
+    "step_of": "/"
+  },
+  "timeline": {
+    "title": "学习路径",
+    "subtitle": "22 课拆解 Claude Code 这类 Agent 产品的 Harness 机制",
+    "layer_legend": "架构层",
+    "loc_growth": "实现参考规模",
+    "learn_more": "进入本课"
+  },
   "layers": {
-    "title": "架构层次",
-    "subtitle": "五个正交关注点组合成完整的 Agent",
-    "tools": "Agent 能做什么。基础层：工具赋予模型与外部世界交互的能力。",
-    "planning": "如何组织工作。从简单的待办列表到跨 Agent 共享的依赖感知任务板。",
-    "memory": "在上下文限制内保持记忆。压缩策略让 Agent 可以无限工作而不失去连贯性。",
-    "concurrency": "非阻塞执行。后台线程和通知总线实现并行工作。",
-    "collaboration": "多 Agent 协作。团队、消息传递和能独立思考的自主队友。"
+    "title": "架构地图",
+    "subtitle": "先补基础，再把 Agent 产品拆成五层：能做什么、如何组织、如何记住、如何并行、如何协作。",
+    "tools": "工具与执行：Agent 能看见什么、能调用什么、哪些动作需要边界。",
+    "planning": "规划与控制：让 Agent 先拆任务、再行动，并在长任务里保持方向。",
+    "memory": "上下文与记忆：在有限 Context 中保留目标、约束和长期偏好。",
+    "concurrency": "并发与触发：慢任务后台跑，定时任务自动进入工作流。",
+    "collaboration": "协作与外部能力：子 Agent、团队协议、隔离工作区和 MCP 工具接入。",
+    "foundation": "基础准备：项目位置、工作区、.env、模型无状态、messages[] 和 while 循环。"
   },
   "compare": {
-    "title": "版本对比",
-    "subtitle": "查看任意两个版本之间的变化",
-    "select_a": "版本 A",
-    "select_b": "版本 B",
-    "loc_delta": "代码量差异",
+    "title": "机制对比",
+    "subtitle": "比较任意两课，看看 Agent Harness 增加了哪些能力。",
+    "select_a": "起点课",
+    "select_b": "目标课",
+    "select_placeholder": "请选择",
+    "loc_delta": "代码证据变化",
     "lines": "行",
-    "new_tools_in_b": "B 中新增工具",
-    "new_classes_in_b": "B 中新增类",
-    "new_functions_in_b": "B 中新增函数",
-    "tool_comparison": "工具对比",
+    "new_tools_in_b": "目标课新增 Tool",
+    "new_classes_in_b": "目标课新增类",
+    "new_functions_in_b": "目标课新增函数",
+    "tool_comparison": "Tool 对比",
     "only_in": "仅在",
-    "shared": "共有",
+    "shared": "共同具备",
     "none": "无",
-    "source_diff": "源码差异",
-    "empty_hint": "请在上方选择两个版本进行对比。",
-    "architecture": "架构"
+    "source_diff": "实现参考差异",
+    "empty_hint": "请选择两课进行对比。",
+    "architecture": "架构对比"
   },
   "diff": {
     "new_classes": "新增类",
-    "new_tools": "新增工具",
+    "new_tools": "新增 Tool",
     "new_functions": "新增函数",
-    "loc_delta": "代码量差异"
+    "loc_delta": "代码证据变化",
+    "back_to_timeline": "返回学习路径",
+    "back_to_version": "返回 {title}",
+    "first_version": "这是起点课，没有上一课可供对比。"
   },
   "sessions": {
-    "s01": "Agent Loop",
-    "s02": "Tool Use",
-    "s03": "Permission",
-    "s04": "Hooks",
-    "s05": "TodoWrite",
-    "s06": "Subagent",
-    "s07": "Skills",
-    "s08": "Context Compact",
-    "s09": "Memory",
-    "s10": "System Prompt",
-    "s11": "Error Recovery",
-    "s12": "Task System",
-    "s13": "Background Tasks",
-    "s14": "Cron Scheduler",
-    "s15": "Agent Teams",
-    "s16": "Team Protocols",
-    "s17": "Autonomous Agents",
-    "s18": "Worktree Isolation",
-    "s19": "MCP Tools",
-    "s20": "Comprehensive Agent Turn"
+    "s00": "前置准备",
+    "s01": "LLM 基础",
+    "s02": "Agent Loop",
+    "s03": "Tool Use",
+    "s04": "Permission",
+    "s05": "Hooks",
+    "s06": "TodoWrite",
+    "s07": "Subagent",
+    "s08": "Skill Loading",
+    "s09": "Context Compact",
+    "s10": "Memory",
+    "s11": "System Prompt",
+    "s12": "Error Recovery",
+    "s13": "Task System",
+    "s14": "Background Tasks",
+    "s15": "Cron Scheduler",
+    "s16": "Agent Teams",
+    "s17": "Team Protocols",
+    "s18": "Autonomous Agents",
+    "s19": "Worktree Isolation",
+    "s20": "MCP Tools",
+    "s21": "Comprehensive Agent"
   },
   "layer_labels": {
     "tools": "工具与执行",
-    "planning": "规划与协调",
-    "memory": "记忆管理",
-    "concurrency": "并发",
-    "collaboration": "多 Agent 平台"
+    "planning": "规划与控制",
+    "memory": "上下文与记忆",
+    "concurrency": "并发与触发",
+    "collaboration": "协作与外部能力",
+    "foundation": "基础准备"
   },
   "viz": {
-    "s01": "Agent While-Loop",
-    "s02": "Tool Dispatch Map",
-    "s03": "Permission Desk",
-    "s04": "Hook Workbench",
-    "s05": "TodoWrite Nag System",
-    "s06": "Subagent Context Isolation",
-    "s07": "On-Demand Skill Loading",
-    "s08": "Three-Layer Context Compact",
-    "s09": "记忆图书馆",
-    "s10": "Runtime Prompt Assembly",
-    "s11": "Error Recovery Paths",
-    "s12": "任务看板依赖",
-    "s13": "Background Task Lanes",
-    "s14": "Cron Scheduler",
-    "s15": "团队邮箱工作台",
-    "s16": "Team Protocol Cards",
-    "s17": "Autonomous Agent Cycle",
-    "s18": "Worktree Task Isolation",
-    "s19": "MCP Tool Bridge",
-    "s20": "Comprehensive Agent Turn"
+    "s00": "前置准备",
+    "s01": "LLM 基础",
+    "s02": "Agent Loop",
+    "s03": "Tool 分发",
+    "s04": "权限门控",
+    "s05": "Hook 扩展点",
+    "s06": "TodoWrite 计划",
+    "s07": "Subagent 上下文隔离",
+    "s08": "按需加载技能",
+    "s09": "Context Compact",
+    "s10": "记忆系统",
+    "s11": "运行时组装 System Prompt",
+    "s12": "错误恢复路径",
+    "s13": "任务图",
+    "s14": "后台任务通道",
+    "s15": "定时触发",
+    "s16": "Agent 团队",
+    "s17": "团队协议",
+    "s18": "自主认领任务",
+    "s19": "Worktree 隔离",
+    "s20": "MCP Tool 接入",
+    "s21": "完整 Agent Harness"
+  },
+  "viz_guides": {
+    "s00": "这一课没有机制动画。先确认项目根目录、工作区和 .env 配置，后面所有练习都依赖它。",
+    "s01": "这一课没有机制动画。重点看 messages[] 如何保存历史，以及 while True 如何让终端聊天持续运行。",
+    "s02": "先看箭头：用户目标进入 messages[]，模型提出 tool_use，Harness 执行后把 tool_result 放回去。你要理解的是“模型为什么能连续行动”。",
+    "s03": "s02 里，Harness 里只有 bash 这一个工具。Agent 收到的所有指令，都只能通过 bash 写命令这来完成。s03 新增了很多不同的工具和 dispatch：Harness 根据 Tool 名称把请求交给对应 handler（处理函数，如 run_read）。你要理解的是：加能力不改主循环，只要新增 Tool 定义和 handler。",
+    "s04": "先看 Tool 执行前多出来的权限门。你要理解的是：危险动作必须先被 Harness 判断。",
+    "s05": "先看 Hook 插在循环的哪些位置。你要理解的是：日志、审计、提醒、拦截都不应该污染主循环。",
+    "s06": "先看任务状态如何从 pending 到 in_progress 再到 completed。你要理解的是：计划让 Agent 的工作过程可见。",
+    "s07": "先看主 Agent 和子 Agent 的 Context 如何隔离。你要理解的是：子任务不应该把所有噪音带回主线。",
+    "s08": "先看技能摘要和完整技能内容的区别。你要理解的是：常驻的是目录，详细内容用到时再加载。",
+    "s09": "先看 Context 如何被压缩。你要理解的是：长任务不是无限塞内容，而是持续整理可见信息。",
+    "s10": "先看哪些信息会进入长期 Memory。你要理解的是：记忆不是聊天记录全保存，而是筛选稳定事实。",
+    "s11": "先看 System Prompt 如何由多个 section 组装。你要理解的是：prompt 是运行时配置，不是一段死文本。",
+    "s12": "先看错误发生后走哪条恢复路径。你要理解的是：失败要分类处理，不是让用户重来。",
+    "s13": "先看任务之间的依赖关系。你要理解的是：复杂目标需要任务图，而不只是一个 TODO 列表。",
+    "s14": "先看慢任务如何进入后台。你要理解的是：Agent 可以继续工作，等后台结果再回流。",
+    "s15": "先看时间如何触发新任务。你要理解的是：定时工作由 Harness 唤起，不靠模型记忆。",
+    "s16": "先看 Lead 和队友如何通过邮箱通信。你要理解的是：多 Agent 需要异步协作空间。",
+    "s17": "先看消息类型和 request_id。你要理解的是：计划、审批、关机不能只靠自然语言。",
+    "s18": "先看队友如何自己看任务板并认领工作。你要理解的是：自治来自任务系统和协议，不是放任。",
+    "s19": "先看任务和 worktree 如何绑定。你要理解的是：并行 Agent 需要隔离文件目录。",
+    "s20": "先看 MCP 工具如何加入 Tool 池。你要理解的是：外部能力可以通过标准协议接进 Harness。",
+    "s21": "先看所有机制挂回同一个 loop 的位置。你要理解的是：复杂 Agent 产品仍然围绕 tool_use 和 tool_result 运转。"
+  },
+  "version_meta": {
+    "s00": {
+      "title": "前置准备",
+      "subtitle": "把项目、工作区和 .env 放对位置",
+      "coreAddition": "学习环境准备",
+      "keyInsight": ""
+    },
+    "s01": {
+      "title": "LLM 基础",
+      "subtitle": "模型无状态、messages[] 和 while 循环",
+      "coreAddition": "最小聊天循环",
+      "keyInsight": "模型是无状态的，不会自己记住上一轮对话；多轮对话是客户端维护 messages[] 并反复调用模型的结果。"
+    },
+    "s02": {
+      "title": "Agent Loop",
+      "subtitle": "让模型真正动起来",
+      "coreAddition": "最小 Agent 循环",
+      "keyInsight": "Agent 产品的第一步，是让模型能调用 Tool、看到结果，并继续下一轮判断。"
+    },
+    "s03": {
+      "title": "Tool Use",
+      "subtitle": "把能力做成可调用的动作",
+      "coreAddition": "Tool 分发表",
+      "keyInsight": "给 Agent 增加新能力时，不需要修改主循环；只要新增一个 Tool，并在分发表里注册它即可。"
+    },
+    "s04": {
+      "title": "Permission",
+      "subtitle": "先有边界，再让 Agent 行动",
+      "coreAddition": "权限门控",
+      "keyInsight": "安全不能靠模型自觉，危险动作需要在 Harness 里被识别、拦截或请求确认。"
+    },
+    "s05": {
+      "title": "Hooks",
+      "subtitle": "在关键节点扩展产品能力",
+      "coreAddition": "生命周期 Hook",
+      "keyInsight": "日志、审计、注入和拦截应挂在循环周围，而不是塞进循环内部。"
+    },
+    "s06": {
+      "title": "TodoWrite",
+      "subtitle": "让长任务有计划可追踪",
+      "coreAddition": "会话内计划",
+      "keyInsight": "计划不是装饰，计划让用户和 Agent 都知道当前目标、步骤和进度。"
+    },
+    "s07": {
+      "title": "Subagent",
+      "subtitle": "把复杂任务拆给干净上下文",
+      "coreAddition": "隔离子任务上下文",
+      "keyInsight": "子 Agent 让每个子任务在自己的 Context 中完成，再把结论带回主线。"
+    },
+    "s08": {
+      "title": "Skill Loading",
+      "subtitle": "用到知识时再加载",
+      "coreAddition": "按需知识加载",
+      "keyInsight": "Agent 需要知道有哪些知识可用，但不应该每轮都背着全部文档。"
+    },
+    "s09": {
+      "title": "Context Compact",
+      "subtitle": "上下文满了也能继续",
+      "coreAddition": "上下文压缩",
+      "keyInsight": "长任务一定会挤满 Context，产品需要主动压缩、裁剪和摘要。"
+    },
+    "s10": {
+      "title": "Memory",
+      "subtitle": "记住该长期保留的事实",
+      "coreAddition": "持久记忆层",
+      "keyInsight": "偏好、约束和项目事实不应只活在一次对话里。"
+    },
+    "s11": {
+      "title": "System Prompt",
+      "subtitle": "按当前状态组装提示词",
+      "coreAddition": "运行时 prompt 组装",
+      "keyInsight": "System Prompt 是产品配置的结果，不是一段永远不变的长文本。"
+    },
+    "s12": {
+      "title": "Error Recovery",
+      "subtitle": "失败后知道怎么恢复",
+      "coreAddition": "恢复策略",
+      "keyInsight": "限流、截断和上下文超限是常态，Harness 要知道何时重试、压缩或续写。"
+    },
+    "s13": {
+      "title": "Task System",
+      "subtitle": "把大目标变成可恢复任务图",
+      "coreAddition": "任务看板",
+      "keyInsight": "任务系统让目标可拆分、可依赖、可认领，也能跨会话恢复。"
+    },
+    "s14": {
+      "title": "Background Tasks",
+      "subtitle": "慢操作后台跑",
+      "coreAddition": "后台执行",
+      "keyInsight": "Agent 不应该因为一个慢命令停住，后台任务让它继续观察和规划。"
+    },
+    "s15": {
+      "title": "Cron Scheduler",
+      "subtitle": "让任务按时间自动出现",
+      "coreAddition": "定时触发",
+      "keyInsight": "定时工作应该由 Harness 触发，而不是靠模型记住未来某个时间。"
+    },
+    "s16": {
+      "title": "Agent Teams",
+      "subtitle": "多个 Agent 并行协作",
+      "coreAddition": "队友邮箱",
+      "keyInsight": "多 Agent 产品需要独立上下文和异步通信，而不是把所有思考挤在一个窗口。"
+    },
+    "s17": {
+      "title": "Team Protocols",
+      "subtitle": "协作要有结构化协议",
+      "coreAddition": "消息协议",
+      "keyInsight": "审批、计划和关机这类协作动作，需要可验证的消息契约。"
+    },
+    "s18": {
+      "title": "Autonomous Agents",
+      "subtitle": "让队友自己找活干",
+      "coreAddition": "自主认领",
+      "keyInsight": "当 Agent 能看任务板、认领任务、汇报进展，团队才开始具备持续推进能力。"
+    },
+    "s19": {
+      "title": "Worktree Isolation",
+      "subtitle": "并行工作需要隔离目录",
+      "coreAddition": "工作区隔离",
+      "keyInsight": "多 Agent 并行改同一项目时，隔离文件系统和隔离上下文同样重要。"
+    },
+    "s20": {
+      "title": "MCP Tools",
+      "subtitle": "把外部服务接进 Tool 池",
+      "coreAddition": "MCP Tool 桥接",
+      "keyInsight": "MCP 让外部系统通过标准协议变成 Agent 可发现、可调用的能力。"
+    },
+    "s21": {
+      "title": "Comprehensive Agent",
+      "subtitle": "所有机制回到一个 Harness",
+      "coreAddition": "完整 Harness",
+      "keyInsight": "机制可以很多，但核心仍是一条模型、Tool、结果回写的循环。"
+    }
   }
 }

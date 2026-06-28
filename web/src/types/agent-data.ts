@@ -1,4 +1,5 @@
 export type AgentLayer =
+  | "foundation"
   | "tools"
   | "planning"
   | "memory"

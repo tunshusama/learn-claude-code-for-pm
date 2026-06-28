@@ -1,0 +1,4 @@
+interface:
+  display_name: "Learn Agent Course"
+  short_description: "Course-specific copy and content guidance"
+  default_prompt: "Use $learn-agent-course to revise course copy for beginner Agent learners."

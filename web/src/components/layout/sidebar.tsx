@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LAYERS, VERSION_META } from "@/lib/constants";
-import { useTranslations } from "@/lib/i18n";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const LAYER_DOT_BG: Record<string, string> = {
+  foundation: "bg-zinc-500",
   tools: "bg-blue-500",
   planning: "bg-emerald-500",
   memory: "bg-purple-500",
@@ -14,15 +15,20 @@ const LAYER_DOT_BG: Record<string, string> = {
   collaboration: "bg-red-500",
 };
 
-export function Sidebar() {
+interface SidebarProps {
+  className?: string;
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ className, onNavigate }: SidebarProps) {
   const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
+  const locale = useLocale();
   const t = useTranslations("sessions");
   const tLayer = useTranslations("layer_labels");
 
   return (
-    <nav className="hidden w-56 shrink-0 md:block">
-      <div className="sticky top-[calc(3.5rem+2rem)] space-y-5">
+    <nav className={cn("w-64 shrink-0", className)}>
+      <div className="space-y-5">
         {LAYERS.map((layer) => (
           <div key={layer.id}>
             <div className="flex items-center gap-1.5 pb-1.5">
@@ -44,6 +50,7 @@ export function Sidebar() {
                   <li key={vId}>
                     <Link
                       href={href}
+                      onClick={onNavigate}
                       className={cn(
                         "block rounded-md px-2.5 py-1.5 text-sm transition-colors",
                         isActive

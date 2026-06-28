@@ -8,8 +8,10 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import versionsData from "@/data/generated/versions.json";
 import { MessageFlow } from "@/components/architecture/message-flow";
+import { getVersionDisplay } from "@/lib/locale-display";
 
 const LAYER_DOT_COLORS: Record<string, string> = {
+  foundation: "bg-zinc-500",
   tools: "bg-blue-500",
   planning: "bg-emerald-500",
   memory: "bg-purple-500",
@@ -18,6 +20,7 @@ const LAYER_DOT_COLORS: Record<string, string> = {
 };
 
 const LAYER_BORDER_COLORS: Record<string, string> = {
+  foundation: "border-zinc-500/30 hover:border-zinc-500/60",
   tools: "border-blue-500/30 hover:border-blue-500/60",
   planning: "border-emerald-500/30 hover:border-emerald-500/60",
   memory: "border-purple-500/30 hover:border-purple-500/60",
@@ -26,6 +29,7 @@ const LAYER_BORDER_COLORS: Record<string, string> = {
 };
 
 const LAYER_BAR_COLORS: Record<string, string> = {
+  foundation: "bg-zinc-500",
   tools: "bg-blue-500",
   planning: "bg-emerald-500",
   memory: "bg-purple-500",
@@ -39,6 +43,7 @@ function getVersionData(id: string) {
 
 export default function HomePage() {
   const t = useTranslations("home");
+  const tLayer = useTranslations("layer_labels");
   const locale = useLocale();
 
   return (
@@ -149,6 +154,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {LEARNING_PATH.map((versionId) => {
             const meta = VERSION_META[versionId];
+            const display = getVersionDisplay(versionId, locale);
             const data = getVersionData(versionId);
             if (!meta || !data) return null;
             return (
@@ -170,10 +176,10 @@ export default function HomePage() {
                     </span>
                   </div>
                   <h3 className="mt-3 text-sm font-semibold group-hover:underline">
-                    {meta.title}
+                    {display.title}
                   </h3>
                   <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                    {meta.keyInsight}
+                    {display.keyInsight}
                   </p>
                 </Card>
               </Link>
@@ -204,21 +210,21 @@ export default function HomePage() {
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold">{layer.label}</h3>
+                  <h3 className="text-sm font-semibold">{tLayer(layer.id)}</h3>
                   <span className="text-xs text-[var(--color-text-secondary)]">
                     {layer.versions.length} {t("versions_in_layer")}
                   </span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {layer.versions.map((vid) => {
-                    const meta = VERSION_META[vid];
+                    const display = getVersionDisplay(vid, locale);
                     return (
                       <Link key={vid} href={`/${locale}/${vid}`}>
                         <LayerBadge
                           layer={layer.id}
                           className="cursor-pointer transition-opacity hover:opacity-80"
                         >
-                          {vid}: {meta?.title}
+                          {vid}: {display.title}
                         </LayerBadge>
                       </Link>
                     );

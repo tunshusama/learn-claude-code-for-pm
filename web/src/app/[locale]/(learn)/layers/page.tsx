@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
-import { LAYERS, VERSION_META } from "@/lib/constants";
+import { LAYERS } from "@/lib/constants";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayerBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import type { VersionIndex } from "@/types/agent-data";
 import versionData from "@/data/generated/versions.json";
+import { getVersionDisplay } from "@/lib/locale-display";
 
 const data = versionData as VersionIndex;
 
 const LAYER_BORDER_CLASSES: Record<string, string> = {
+  foundation: "border-l-zinc-500",
   tools: "border-l-blue-500",
   planning: "border-l-emerald-500",
   memory: "border-l-purple-500",
@@ -21,6 +23,7 @@ const LAYER_BORDER_CLASSES: Record<string, string> = {
 };
 
 const LAYER_HEADER_BG: Record<string, string> = {
+  foundation: "bg-zinc-500",
   tools: "bg-blue-500",
   planning: "bg-emerald-500",
   memory: "bg-purple-500",
@@ -30,6 +33,8 @@ const LAYER_HEADER_BG: Record<string, string> = {
 
 export default function LayersPage() {
   const t = useTranslations("layers");
+  const tLayer = useTranslations("layer_labels");
+  const tVersion = useTranslations("version");
   const locale = useLocale();
 
   return (
@@ -43,8 +48,7 @@ export default function LayersPage() {
         {LAYERS.map((layer, index) => {
           const versionInfos = layer.versions.map((vId) => {
             const info = data.versions.find((v) => v.id === vId);
-            const meta = VERSION_META[vId];
-            return { id: vId, info, meta };
+            return { id: vId, info };
           });
 
           return (
@@ -63,7 +67,7 @@ export default function LayersPage() {
                   <h2 className="text-xl font-bold">
                     <span className="text-zinc-400 dark:text-zinc-600">L{index + 1}</span>
                     {" "}
-                    {layer.label}
+                    {tLayer(layer.id)}
                   </h2>
                   <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                     {t(layer.id)}
@@ -74,45 +78,49 @@ export default function LayersPage() {
               {/* Version cards within this layer */}
               <div className="border-t border-zinc-200 bg-zinc-50/50 px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {versionInfos.map(({ id, info, meta }) => (
-                    <Link
-                      key={id}
-                      href={`/${locale}/${id}`}
-                      className="group"
-                    >
-                      <Card className="transition-shadow hover:shadow-md">
-                        <div className="flex items-start justify-between">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-zinc-400">{id}</span>
-                              <LayerBadge layer={layer.id}>{layer.id}</LayerBadge>
+                  {versionInfos.map(({ id, info }) => {
+                    const display = getVersionDisplay(id, locale);
+
+                    return (
+                      <Link
+                        key={id}
+                        href={`/${locale}/${id}`}
+                        className="group"
+                      >
+                        <Card className="transition-shadow hover:shadow-md">
+                          <div className="flex items-start justify-between">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-mono text-zinc-400">{id}</span>
+                                <LayerBadge layer={layer.id}>{tLayer(layer.id)}</LayerBadge>
+                              </div>
+                              <h3 className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">
+                                {display.title}
+                              </h3>
+                              {display.subtitle && (
+                                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                                  {display.subtitle}
+                                </p>
+                              )}
                             </div>
-                            <h3 className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">
-                              {meta?.title || id}
-                            </h3>
-                            {meta?.subtitle && (
-                              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                                {meta.subtitle}
-                              </p>
-                            )}
+                            <ChevronRight
+                              size={16}
+                              className="mt-1 shrink-0 text-zinc-300 transition-colors group-hover:text-zinc-600 dark:text-zinc-600 dark:group-hover:text-zinc-300"
+                            />
                           </div>
-                          <ChevronRight
-                            size={16}
-                            className="mt-1 shrink-0 text-zinc-300 transition-colors group-hover:text-zinc-600 dark:text-zinc-600 dark:group-hover:text-zinc-300"
-                          />
-                        </div>
-                        <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
-                          <span>{info?.loc ?? "?"} LOC</span>
-                          <span>{info?.tools.length ?? "?"} tools</span>
-                        </div>
-                        {meta?.keyInsight && (
-                          <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 line-clamp-2">
-                            {meta.keyInsight}
-                          </p>
-                        )}
-                      </Card>
-                    </Link>
-                  ))}
+                          <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+                            <span>{info?.loc ?? "?"} {tVersion("loc")}</span>
+                            <span>{info?.tools.length ?? "?"} {tVersion("tools")}</span>
+                          </div>
+                          {display.keyInsight && (
+                            <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                              {display.keyInsight}
+                            </p>
+                          )}
+                        </Card>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 

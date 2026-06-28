@@ -9,9 +9,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MODULES = {
-    "s08": REPO_ROOT / "s08_context_compact" / "code.py",
-    "s09": REPO_ROOT / "s09_memory" / "code.py",
-    "s20": REPO_ROOT / "s20_comprehensive" / "code.py",
+    "s09": REPO_ROOT / "s09_context_compact" / "code.py",
+    "s10": REPO_ROOT / "s10_memory" / "code.py",
+    "s21": REPO_ROOT / "s21_comprehensive" / "code.py",
 }
 
 
@@ -125,7 +125,7 @@ class CompactionToolPairTests(unittest.TestCase):
         for name, path in MODULES.items():
             with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
                 module = load_module(f"{name}_head_under_test", path, Path(tmp))
-                if name == "s09":
+                if name == "s10":
                     compacted = module.snip_compact(list(messages), mx=6)
                 else:
                     compacted = module.snip_compact(list(messages), max_messages=6)
@@ -150,7 +150,7 @@ class CompactionToolPairTests(unittest.TestCase):
         for name, path in MODULES.items():
             with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
                 module = load_module(f"{name}_under_test", path, Path(tmp))
-                if name == "s09":
+                if name == "s10":
                     compacted = module.snip_compact(list(messages), mx=6)
                 else:
                     compacted = module.snip_compact(list(messages), max_messages=6)
@@ -178,9 +178,9 @@ class CompactionToolPairTests(unittest.TestCase):
                 self.assertEqual(compacted[1], messages[3])
                 assert_no_orphan_tool_results(self, compacted)
 
-    def test_s20_has_tool_use_still_accepts_content_blocks(self):
+    def test_s21_has_tool_use_still_accepts_content_blocks(self):
         with tempfile.TemporaryDirectory() as tmp:
-            module = load_module("s20_has_tool_use_under_test", MODULES["s20"], Path(tmp))
+            module = load_module("s21_has_tool_use_under_test", MODULES["s21"], Path(tmp))
             self.assertTrue(module.has_tool_use([types.SimpleNamespace(type="tool_use")]))
             self.assertFalse(module.has_tool_use([types.SimpleNamespace(type="text")]))
 

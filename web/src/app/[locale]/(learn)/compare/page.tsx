@@ -10,11 +10,14 @@ import { ArchDiagram } from "@/components/architecture/arch-diagram";
 import { ArrowRight, FileCode, Wrench, Box, FunctionSquare } from "lucide-react";
 import type { VersionIndex } from "@/types/agent-data";
 import versionData from "@/data/generated/versions.json";
+import { getLocaleMessage, getVersionDisplay } from "@/lib/locale-display";
 
 const data = versionData as VersionIndex;
 
 export default function ComparePage() {
   const t = useTranslations("compare");
+  const tVersion = useTranslations("version");
+  const tLayer = useTranslations("layer_labels");
   const locale = useLocale();
   const [versionA, setVersionA] = useState<string>("");
   const [versionB, setVersionB] = useState<string>("");
@@ -23,6 +26,14 @@ export default function ComparePage() {
   const infoB = useMemo(() => data.versions.find((v) => v.id === versionB), [versionB]);
   const metaA = versionA ? VERSION_META[versionA] : null;
   const metaB = versionB ? VERSION_META[versionB] : null;
+  const displayA = versionA ? getVersionDisplay(versionA, locale) : null;
+  const displayB = versionB ? getVersionDisplay(versionB, locale) : null;
+  const selectPlaceholder = getLocaleMessage(
+    locale,
+    "compare",
+    "select_placeholder",
+    "-- select --"
+  );
 
   const comparison = useMemo(() => {
     if (!infoA || !infoB) return null;
@@ -68,10 +79,10 @@ export default function ComparePage() {
             onChange={(e) => setVersionA(e.target.value)}
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
           >
-            <option value="">-- select --</option>
+            <option value="">{selectPlaceholder}</option>
             {LEARNING_PATH.map((v) => (
               <option key={v} value={v}>
-                {v} - {VERSION_META[v]?.title}
+                {v} - {getVersionDisplay(v, locale).title}
               </option>
             ))}
           </select>
@@ -88,10 +99,10 @@ export default function ComparePage() {
             onChange={(e) => setVersionB(e.target.value)}
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
           >
-            <option value="">-- select --</option>
+            <option value="">{selectPlaceholder}</option>
             {LEARNING_PATH.map((v) => (
               <option key={v} value={v}>
-                {v} - {VERSION_META[v]?.title}
+                {v} - {getVersionDisplay(v, locale).title}
               </option>
             ))}
           </select>
@@ -105,24 +116,24 @@ export default function ComparePage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>{metaA?.title || versionA}</CardTitle>
-                <p className="text-sm text-zinc-500">{metaA?.subtitle}</p>
+                <CardTitle>{displayA?.title || versionA}</CardTitle>
+                <p className="text-sm text-zinc-500">{displayA?.subtitle}</p>
               </CardHeader>
               <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                <p>{infoA.loc} LOC</p>
-                <p>{infoA.tools.length} tools</p>
-                {metaA && <LayerBadge layer={metaA.layer}>{metaA.layer}</LayerBadge>}
+                <p>{infoA.loc} {tVersion("loc")}</p>
+                <p>{infoA.tools.length} {tVersion("tools")}</p>
+                {metaA && <LayerBadge layer={metaA.layer}>{tLayer(metaA.layer)}</LayerBadge>}
               </div>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>{metaB?.title || versionB}</CardTitle>
-                <p className="text-sm text-zinc-500">{metaB?.subtitle}</p>
+                <CardTitle>{displayB?.title || versionB}</CardTitle>
+                <p className="text-sm text-zinc-500">{displayB?.subtitle}</p>
               </CardHeader>
               <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                <p>{infoB.loc} LOC</p>
-                <p>{infoB.tools.length} tools</p>
-                {metaB && <LayerBadge layer={metaB.layer}>{metaB.layer}</LayerBadge>}
+                <p>{infoB.loc} {tVersion("loc")}</p>
+                <p>{infoB.tools.length} {tVersion("tools")}</p>
+                {metaB && <LayerBadge layer={metaB.layer}>{tLayer(metaB.layer)}</LayerBadge>}
               </div>
             </Card>
           </div>
@@ -133,13 +144,13 @@ export default function ComparePage() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div>
                 <h3 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                  {metaA?.title || versionA}
+                  {displayA?.title || versionA}
                 </h3>
                 <ArchDiagram version={versionA} />
               </div>
               <div>
                 <h3 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                  {metaB?.title || versionB}
+                  {displayB?.title || versionB}
                 </h3>
                 <ArchDiagram version={versionB} />
               </div>
@@ -235,7 +246,7 @@ export default function ComparePage() {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div>
                 <h4 className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  {t("only_in")} {metaA?.title || versionA}
+                  {t("only_in")} {displayA?.title || versionA}
                 </h4>
                 {comparison.toolsOnlyA.length === 0 ? (
                   <p className="text-xs text-zinc-400">{t("none")}</p>
@@ -267,7 +278,7 @@ export default function ComparePage() {
               </div>
               <div>
                 <h4 className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  {t("only_in")} {metaB?.title || versionB}
+                  {t("only_in")} {displayB?.title || versionB}
                 </h4>
                 {comparison.toolsOnlyB.length === 0 ? (
                   <p className="text-xs text-zinc-400">{t("none")}</p>

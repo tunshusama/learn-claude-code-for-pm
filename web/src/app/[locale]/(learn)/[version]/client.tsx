@@ -32,6 +32,7 @@ export function VersionDetailClient({
   filename,
 }: VersionDetailClientProps) {
   const t = useTranslations("version");
+  const isSetupPage = version === "s00";
 
   const tabs = [
     { id: "learn", label: t("tab_learn") },
@@ -45,38 +46,44 @@ export function VersionDetailClient({
       {/* Hero Visualization */}
       <SessionVisualization version={version} />
 
-      {/* Tabbed content */}
-      <Tabs tabs={tabs} defaultTab="learn">
-        {(activeTab) => (
-          <>
-            {activeTab === "learn" && <DocRenderer version={version} />}
-            {activeTab === "simulate" && (
-              <AgentLoopSimulator version={version} />
+      {isSetupPage ? (
+        <DocRenderer version={version} />
+      ) : (
+        <>
+          {/* Tabbed content */}
+          <Tabs tabs={tabs} defaultTab="learn">
+            {(activeTab) => (
+              <>
+                {activeTab === "learn" && <DocRenderer version={version} />}
+                {activeTab === "simulate" && (
+                  <AgentLoopSimulator version={version} />
+                )}
+                {activeTab === "code" && (
+                  <SourceViewer source={source} filename={filename} />
+                )}
+                {activeTab === "deep-dive" && (
+                  <div className="space-y-8">
+                    <section>
+                      <h2 className="mb-4 text-xl font-semibold">
+                        {t("execution_flow")}
+                      </h2>
+                      <ExecutionFlow version={version} />
+                    </section>
+                    <section>
+                      <h2 className="mb-4 text-xl font-semibold">
+                        {t("architecture")}
+                      </h2>
+                      <ArchDiagram version={version} />
+                    </section>
+                    {diff && <WhatsNew diff={diff} />}
+                    <DesignDecisions version={version} />
+                  </div>
+                )}
+              </>
             )}
-            {activeTab === "code" && (
-              <SourceViewer source={source} filename={filename} />
-            )}
-            {activeTab === "deep-dive" && (
-              <div className="space-y-8">
-                <section>
-                  <h2 className="mb-4 text-xl font-semibold">
-                    {t("execution_flow")}
-                  </h2>
-                  <ExecutionFlow version={version} />
-                </section>
-                <section>
-                  <h2 className="mb-4 text-xl font-semibold">
-                    {t("architecture")}
-                  </h2>
-                  <ArchDiagram version={version} />
-                </section>
-                {diff && <WhatsNew diff={diff} />}
-                <DesignDecisions version={version} />
-              </div>
-            )}
-          </>
-        )}
-      </Tabs>
+          </Tabs>
+        </>
+      )}
     </div>
   );
 }

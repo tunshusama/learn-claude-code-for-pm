@@ -106,7 +106,7 @@ Claude Code = 一つの agent loop
 
 これがすべてだ。これが全アーキテクチャ。すべてのコンポーネントは Harness メカニズム -- Agent が住む世界の一部。Agent そのものは？ Claude だ。モデル。Anthropic が人類の推論とコードの全幅で訓練した。Harness が Claude を賢くしたのではない。Claude は元々賢い。Harness が Claude に手と目とワークスペースを与えた。
 
-これが Claude Code が理想的な教材である理由だ：**モデルを信頼し、工学的努力を Harness に集中させるとどうなるかを示している。** このリポジトリの各セッション（s01-s20）は Claude Code アーキテクチャの Harness メカニズムを段階的に分解し、最後に組み直す。終了時には、Claude Code の仕組みだけでなく、あらゆるドメインのあらゆる Agent に適用される Harness 工学の普遍的原則を理解している。
+これが Claude Code が理想的な教材である理由だ：**モデルを信頼し、工学的努力を Harness に集中させるとどうなるかを示している。** このリポジトリの各セッション（s00-s21）は Claude Code アーキテクチャの Harness メカニズムを段階的に分解し、最後に組み直す。終了時には、Claude Code の仕組みだけでなく、あらゆるドメインのあらゆる Agent に適用される Harness 工学の普遍的原則を理解している。
 
 教訓は「Claude Code をコピーせよ」ではない。教訓は：**最高の Agent プロダクトは、自分の仕事が Harness であって Intelligence ではないと理解しているエンジニアが作る。**
 
@@ -237,16 +237,16 @@ def agent_loop(messages):
 
 このリポジトリには現在、2 つのチュートリアルトラックが共存している：
 
-- **現行トラック：ルート直下の `s01-s20`**
-  ルート直下の `s01_*` から `s20_*` までが新しい正規版であり、現在推奨する読書経路。各セッションには中国語原文、英語/日本語訳、実行可能な `code.py`、必要に応じた図が含まれる。
+- **現行トラック：ルート直下の `s00-s21`**
+  ルート直下の `s00_*` から `s21_*` までが新しい正規版であり、現在推奨する読書経路。各セッションには中国語原文、英語/日本語訳、実行可能な `code.py`、必要に応じた図が含まれる。
 - **旧版移行トラック：`docs/`、`agents/`、現在の `web/`**
   これらは旧 12 セッション版を保持している。既存読者、旧リンク、Web プラットフォームのために移行期間中は一時的に残している。
 
-新しく読む場合は、ルート直下の `s01_agent_loop/` から `s20_comprehensive/` までを読む。旧リンクや現在の Web アプリから入った場合は、旧 12 セッション版を読んでいる可能性が高い。旧版と現行版のセッション番号は常に一致しないため、番号を混同しないこと。
+新しく読む場合は、ルート直下の `s02_agent_loop/` から `s21_comprehensive/` までを読む。旧リンクや現在の Web アプリから入った場合は、旧 12 セッション版を読んでいる可能性が高い。旧版と現行版のセッション番号は常に一致しないため、番号を混同しないこと。
 
 ### 旧版から現行版への対応
 
-| 旧 12 セッション版 | 現行 20 セッション版 | トピック |
+| 旧 12 セッション版 | 現行 21 セッション版 | トピック |
 |---|---|---|
 | 旧 s01 | 現行 s01 | Agent Loop |
 | 旧 s02 | 現行 s02 | Tool Use |
@@ -285,9 +285,9 @@ cd learn-claude-code
 pip install -r requirements.txt
 cp .env.example .env   # .env を編集して ANTHROPIC_API_KEY を入力
 
-python s01_agent_loop/code.py        # ここから開始 — 1ループ + bash
-python s08_context_compact/code.py    # コンテキスト圧縮（複雑章）
-python s20_comprehensive/code.py      # 終点: 全メカニズムを 1 つのループへ
+python s02_agent_loop/code.py        # ここから開始 — 1ループ + bash
+python s09_context_compact/code.py    # コンテキスト圧縮（複雑章）
+python s21_comprehensive/code.py      # 終点: 全メカニズムを 1 つのループへ
 ```
 
 ### 旧 12 セッション移行版
@@ -300,7 +300,7 @@ python agents/s_full.py
 
 ### Web プラットフォーム
 
-現在の Web プラットフォームはまだ `docs/` の旧 12 セッション版を表示する。現行 20 セッション版はルート直下の `s01-s20` を読む。
+現在の Web プラットフォームはまだ `docs/` の旧 12 セッション版を表示する。現行 21 セッション版はルート直下の `s00-s21` を読む。
 
 ```sh
 cd web && npm install && npm run dev   # http://localhost:3000
@@ -357,43 +357,43 @@ flowchart TD
 
 | セッション | トピック | キーコンセプト |
 |---|---|---|
-| [s01](./s01_agent_loop/) | Agent Loop | `messages` / `while True` / `stop_reason` |
-| [s02](./s02_tool_use/) | Tool Use | `TOOL_HANDLERS` / dispatch map / 並行性 |
-| [s03](./s03_permission/) | Permission | `PermissionRule` / 承認パイプライン |
-| [s04](./s04_hooks/) | Hooks | `PreToolUse` / `PostToolUse` / 拡張ポイント |
-| [s05](./s05_todo_write/) | TodoWrite | `TodoItem` / 計画してから実行 |
-| [s06](./s06_subagent/) | Subagent | `fresh messages[]` / コンテキスト分離 |
-| [s07](./s07_skill_loading/) | Skill Loading | `SkillManifest` / オンデマンド注入 |
-| [s08](./s08_context_compact/) | Context Compact | snip / micro / budget / auto 4層圧縮 |
-| [s09](./s09_memory/) | Memory | selection / extraction / consolidation |
-| [s10](./s10_system_prompt/) | System Prompt | ランタイム組立 / セクション連結 |
-| [s11](./s11_error_recovery/) | Error Recovery | token 拡張 / fallback モデル / リトライ戦略 |
-| [s12](./s12_task_system/) | Task System | `TaskRecord` / `blockedBy` / ディスク永続化 |
-| [s13](./s13_background_tasks/) | Background Tasks | スレッド実行 / 通知キュー |
-| [s14](./s14_cron_scheduler/) | Cron Scheduler | 永続スケジューリング / セッション限定トリガー |
-| [s15](./s15_agent_teams/) | Agent Teams | `MessageBus` / 受信箱 / 権限バブリング |
-| [s16](./s16_team_protocols/) | Team Protocols | シャットダウンハンドシェイク / プラン承認 |
-| [s17](./s17_autonomous_agents/) | Autonomous Agents | アイドルサイクル / 自動クレーム |
-| [s18](./s18_worktree_isolation/) | Worktree Isolation | `WorktreeRecord` / タスク-ディレクトリ紐付け |
-| [s19](./s19_mcp_plugin/) | MCP Plugin | マルチトランスポート / チャネルルーティング / ツールプール組み立て |
-| [s20](./s20_comprehensive/) | Comprehensive Agent | すべての仕組みを 1 つのループへ |
+| [s02](./s02_agent_loop/) | Agent Loop | `messages` / `while True` / `stop_reason` |
+| [s03](./s03_tool_use/) | Tool Use | `TOOL_HANDLERS` / dispatch map / 並行性 |
+| [s04](./s04_permission/) | Permission | `PermissionRule` / 承認パイプライン |
+| [s05](./s05_hooks/) | Hooks | `PreToolUse` / `PostToolUse` / 拡張ポイント |
+| [s06](./s06_todo_write/) | TodoWrite | `TodoItem` / 計画してから実行 |
+| [s07](./s07_subagent/) | Subagent | `fresh messages[]` / コンテキスト分離 |
+| [s08](./s08_skill_loading/) | Skill Loading | `SkillManifest` / オンデマンド注入 |
+| [s09](./s09_context_compact/) | Context Compact | snip / micro / budget / auto 4層圧縮 |
+| [s10](./s10_memory/) | Memory | selection / extraction / consolidation |
+| [s11](./s11_system_prompt/) | System Prompt | ランタイム組立 / セクション連結 |
+| [s12](./s12_error_recovery/) | Error Recovery | token 拡張 / fallback モデル / リトライ戦略 |
+| [s13](./s13_task_system/) | Task System | `TaskRecord` / `blockedBy` / ディスク永続化 |
+| [s14](./s14_background_tasks/) | Background Tasks | スレッド実行 / 通知キュー |
+| [s15](./s15_cron_scheduler/) | Cron Scheduler | 永続スケジューリング / セッション限定トリガー |
+| [s16](./s16_agent_teams/) | Agent Teams | `MessageBus` / 受信箱 / 権限バブリング |
+| [s17](./s17_team_protocols/) | Team Protocols | シャットダウンハンドシェイク / プラン承認 |
+| [s18](./s18_autonomous_agents/) | Autonomous Agents | アイドルサイクル / 自動クレーム |
+| [s19](./s19_worktree_isolation/) | Worktree Isolation | `WorktreeRecord` / タスク-ディレクトリ紐付け |
+| [s20](./s20_mcp_plugin/) | MCP Plugin | マルチトランスポート / チャネルルーティング / ツールプール組み立て |
+| [s21](./s21_comprehensive/) | Comprehensive Agent | すべての仕組みを 1 つのループへ |
 
 ## プロジェクト構成
 
 ```
 learn-claude-code/
-  s01_agent_loop/          # セッションごとに1フォルダ
+  s02_agent_loop/          # セッションごとに1フォルダ
     README.md              #   中国語ソース（完全なナラティブ）
     README.en.md           #   英語訳
     README.ja.md           #   日本語訳
     code.py                #   単体実行可能なコード
     images/                #   SVG ダイアグラム
-  s02_tool_use/
+  s03_tool_use/
   ...
-  s19_mcp_plugin/
-  s20_comprehensive/       # 終点セッション
+  s20_mcp_plugin/
+  s21_comprehensive/       # 終点セッション
   agents/                  # 旧 12 セッションの実行可能コピー + s_full.py
-  skills/                  # s07 で使用するスキルファイル
+  skills/                  # s08_skill_loading で使用するスキルファイル
   docs/                    # 旧 12 セッション文書、移行期間中は保持
   web/                     # 現在は docs/ の旧版内容を生成・表示
   tests/
@@ -401,7 +401,7 @@ learn-claude-code/
 
 ## 次のステップ -- 理解から出荷へ
 
-20 セッションを終えれば、Harness 工学の内部構造を完全に理解している。その知識を活かす 2 つの方法:
+21 セッションを終えれば、Harness 工学の内部構造を完全に理解している。その知識を活かす 2 つの方法:
 
 ### Kode Agent CLI -- オープンソース Coding Agent CLI
 
