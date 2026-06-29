@@ -16,25 +16,25 @@ const HOOKS: {
 }[] = [
   {
     id: "UserPromptSubmit",
-    when: "after input, before LLM",
+    when: "输入之后，调用 LLM 之前",
     callbacks: ["context_inject_hook"],
     color: "blue",
   },
   {
     id: "PreToolUse",
-    when: "after tool_use, before handler",
+    when: "tool_use 之后，handler 之前",
     callbacks: ["permission_hook", "log_hook"],
     color: "amber",
   },
   {
     id: "PostToolUse",
-    when: "after handler, before next turn",
+    when: "handler 之后，下一轮之前",
     callbacks: ["large_output_hook"],
     color: "emerald",
   },
   {
     id: "Stop",
-    when: "before final output",
+    when: "最终输出之前",
     callbacks: ["summary_hook"],
     color: "zinc",
   },
@@ -42,33 +42,33 @@ const HOOKS: {
 
 const STEPS = [
   {
-    title: "Hooks Are Registered Outside the Loop",
-    desc: "The loop only knows event names; callback behavior lives in the registry.",
+    title: "Hook 注册在主循环外",
+    desc: "主循环只知道事件名；具体回调行为放在注册表里。",
     active: null,
   },
   {
     title: "UserPromptSubmit",
-    desc: "Input hooks can log, validate, or inject context before the model sees the prompt.",
+    desc: "输入 Hook 可以在模型看到 prompt 前记录、校验或注入上下文。",
     active: "UserPromptSubmit" as HookId,
   },
   {
-    title: "The Core Loop Still Chooses a Tool",
-    desc: "Calling the model and receiving tool_use remains the same as before.",
+    title: "核心循环仍然负责选择 Tool",
+    desc: "调用模型、接收 tool_use 的结构和以前一样。",
     active: null,
   },
   {
     title: "PreToolUse",
-    desc: "Permission and logging hooks run before the handler touches the workspace.",
+    desc: "权限和日志 Hook 会在 handler 触碰工作区之前运行。",
     active: "PreToolUse" as HookId,
   },
   {
     title: "PostToolUse",
-    desc: "Result hooks inspect output or trigger side effects after execution.",
+    desc: "结果 Hook 会在执行后检查输出或触发副作用。",
     active: "PostToolUse" as HookId,
   },
   {
     title: "Stop",
-    desc: "Cleanup and summary hooks run when the model stops asking for tools.",
+    desc: "当模型不再请求 Tool 时，收尾和摘要 Hook 会运行。",
     active: "Stop" as HookId,
   },
 ] as const;
@@ -152,14 +152,14 @@ function HookCard({
 function TurnCard({ step }: { step: number }) {
   const state =
     step <= 1
-      ? { title: "User input", body: "Read README.md and summarize it.", icon: <ScrollText size={18} /> }
+      ? { title: "用户输入", body: "读取 README.md 并总结。", icon: <ScrollText size={18} /> }
       : step === 2
-        ? { title: "LLM chooses tool", body: "tool_use: read_file({ path: 'README.md' })", icon: <Wrench size={18} /> }
+        ? { title: "LLM 选择 Tool", body: "tool_use: read_file({ path: 'README.md' })", icon: <Wrench size={18} /> }
         : step === 3
-          ? { title: "Tool waits at pre-hook", body: "permission_hook + log_hook inspect the call.", icon: <FileSearch size={18} /> }
+          ? { title: "Tool 在前置 Hook 等待", body: "permission_hook + log_hook 检查这次调用。", icon: <FileSearch size={18} /> }
           : step === 4
-            ? { title: "Handler returned output", body: "large_output_hook checks result size.", icon: <ClipboardList size={18} /> }
-            : { title: "No more tool_use", body: "summary_hook records final session stats.", icon: <LogOut size={18} /> };
+            ? { title: "Handler 返回输出", body: "large_output_hook 检查结果大小。", icon: <ClipboardList size={18} /> }
+            : { title: "不再有 tool_use", body: "summary_hook 记录本轮会话统计。", icon: <LogOut size={18} /> };
 
   return (
     <motion.div
@@ -181,12 +181,12 @@ function TurnCard({ step }: { step: number }) {
 
 function AuditLog({ step }: { step: number }) {
   const items = [
-    "[registry] four hook slots registered",
-    "[UserPromptSubmit] working directory logged",
-    "[loop] model returned read_file tool_use",
-    "[PreToolUse] permission allowed; tool call logged",
-    "[PostToolUse] output size checked",
-    "[Stop] session used 1 tool call",
+    "[registry] 已注册 4 个 Hook 槽位",
+    "[UserPromptSubmit] 已记录工作目录",
+    "[loop] 模型返回 read_file tool_use",
+    "[PreToolUse] 权限通过；Tool 调用已记录",
+    "[PostToolUse] 已检查输出大小",
+    "[Stop] 本轮会话使用 1 次 Tool",
   ].slice(0, step + 1);
 
   return (
@@ -219,16 +219,16 @@ export default function HooksVisualization({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Hook Workbench"}
+        {title || "Hook 工作台"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-relaxed text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
-          The loop stays boring on purpose: it calls <span className="font-mono">trigger_hooks(event)</span>, and the registry decides what extra logic runs.
+          主循环有意保持无聊：它只调用 <span className="font-mono">trigger_hooks(event)</span>，由注册表决定额外运行哪些逻辑。
         </div>
 
         <div className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
-          <Surface title="Hook registry" icon={<RadioTower size={20} />} active={step === 0 || activeHook !== null}>
+          <Surface title="Hook 注册表" icon={<RadioTower size={20} />} active={step === 0 || activeHook !== null}>
             <div className="grid gap-2 sm:grid-cols-2">
               {HOOKS.map((hook) => (
                 <HookCard key={hook.id} hook={hook} active={activeHook === hook.id} />
@@ -236,11 +236,11 @@ export default function HooksVisualization({ title }: { title?: string }) {
             </div>
           </Surface>
 
-          <Surface title="This turn" icon={<ScrollText size={20} />} active={step >= 1}>
+          <Surface title="本轮执行" icon={<ScrollText size={20} />} active={step >= 1}>
             <div className="space-y-3">
               <TurnCard step={step} />
               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/70">
-                <div className="mb-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">Audit log</div>
+                <div className="mb-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">审计日志</div>
                 <AuditLog step={step} />
               </div>
             </div>
@@ -248,7 +248,7 @@ export default function HooksVisualization({ title }: { title?: string }) {
         </div>
 
         <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-          Beginner rule: adding behavior means registering a callback, not editing the core model-tool-result loop.
+          新手规则：新增行为应该注册 callback，而不是修改核心的“模型 - Tool - 结果”循环。
         </div>
 
         <StepControls

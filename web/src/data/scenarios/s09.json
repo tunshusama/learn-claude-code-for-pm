@@ -1,33 +1,33 @@
 {
   "version": "s09",
   "title": "Memory",
-  "description": "Persistent memory keeps selected project facts available across turns and sessions.",
+  "description": "持久化 Memory 会让选定的项目事实跨轮次、跨会话可用。",
   "steps": [
     {
       "type": "system_event",
-      "content": "Loaded .memory/MEMORY.md index with 3 entries.",
-      "annotation": "A cheap index is always available to the system prompt."
+      "content": "已加载 .memory/MEMORY.md 索引，包含 3 条记忆。",
+      "annotation": "轻量索引会一直提供给 System Prompt。"
     },
     {
       "type": "user_message",
-      "content": "Use the repository's preferred test command.",
-      "annotation": "The user references a fact that may have been learned earlier."
+      "content": "使用这个仓库偏好的测试命令。",
+      "annotation": "用户引用了一个可能以前学到过的事实。"
     },
     {
       "type": "system_event",
-      "content": "Selected memory: project_facts.md -> preferred_test_command=npm run test:unit",
-      "annotation": "Relevant memory content is injected selectively."
+      "content": "已选择记忆：project_facts.md -> preferred_test_command=npm run test:unit",
+      "annotation": "相关 Memory 内容会被选择性注入。"
     },
     {
       "type": "tool_call",
       "toolName": "bash",
       "content": "npm run test:unit",
-      "annotation": "The agent acts on durable knowledge without asking again."
+      "annotation": "Agent 基于持久知识行动，不需要再次询问。"
     },
     {
       "type": "system_event",
-      "content": "extract_memory -> wrote feedback_tabs.md",
-      "annotation": "After the turn, new durable facts can be extracted from the original conversation."
+      "content": "extract_memory -> 写入 feedback_tabs.md",
+      "annotation": "每轮结束后，可以从原始对话中提取新的持久事实。"
     }
   ]
 }

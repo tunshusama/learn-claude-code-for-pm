@@ -1,40 +1,40 @@
 {
   "version": "s05",
   "title": "TodoWrite",
-  "description": "A planning tool makes the agent's intended work visible and keeps long tasks from drifting.",
+  "description": "计划工具让 Agent 的工作意图可见，避免长任务执行到一半跑偏。",
   "steps": [
     {
       "type": "user_message",
-      "content": "Refactor the parser and add a regression test.",
-      "annotation": "The task has multiple steps, so planning should become visible."
+      "content": "重构 parser，并添加一个回归测试。",
+      "annotation": "这个任务有多个步骤，所以计划应该先显性化。"
     },
     {
       "type": "tool_call",
       "toolName": "todo_write",
-      "content": "[{\"content\":\"Inspect parser\",\"status\":\"in_progress\"},{\"content\":\"Refactor parsing branch\",\"status\":\"pending\"},{\"content\":\"Add regression test\",\"status\":\"pending\"}]",
-      "annotation": "The model records a plan before acting."
+      "content": "[{\"content\":\"检查 parser\",\"status\":\"in_progress\"},{\"content\":\"重构解析分支\",\"status\":\"pending\"},{\"content\":\"添加回归测试\",\"status\":\"pending\"}]",
+      "annotation": "模型在行动前先记录计划。"
     },
     {
       "type": "tool_result",
       "toolName": "todo_write",
-      "content": "Todos updated.",
-      "annotation": "The current todo list is kept by the harness."
+      "content": "TODO 已更新。",
+      "annotation": "当前 TODO 列表由 Harness 保存。"
     },
     {
       "type": "tool_call",
       "toolName": "read_file",
       "content": "{\"path\":\"parser.py\"}",
-      "annotation": "Normal tools continue through the same dispatch table."
+      "annotation": "普通 Tool 仍然通过同一个分发表执行。"
     },
     {
       "type": "system_event",
-      "content": "<reminder>Update todo status after 3 rounds without todo_write.</reminder>",
-      "annotation": "The nag reminder keeps the plan fresh during long work."
+      "content": "<reminder>连续 3 轮没有调用 todo_write，请更新 TODO 状态。</reminder>",
+      "annotation": "提醒机制让长任务里的计划保持新鲜。"
     },
     {
       "type": "assistant_text",
-      "content": "I inspected the parser and will update the todo list before making the code change.",
-      "annotation": "The planning state guides the next turn."
+      "content": "我已经检查了 parser，会在修改代码前先更新 TODO 列表。",
+      "annotation": "计划状态会引导下一轮动作。"
     }
   ]
 }

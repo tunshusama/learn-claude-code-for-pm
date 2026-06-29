@@ -4,51 +4,72 @@
 
 [s09](../s09_context_compact/) → `s10` → [s11](../s11_system_prompt/) → ... → s21
 
-> Compact 管当前会话，Memory 管以后还会用到的知识。
+> Compact 管当前会话能否继续，Memory 管以后还会用到什么。
 
 ## 本页怎么学
 
 <div class="learning-card">
 
-1. **先看上方机制演示**：不用记英文标签，先看箭头和状态变化。
-2. **再读“这一章解决什么”**：确认它解决的是哪个产品问题。
-3. **运行“动手练习”**：逐条输入 prompt，对照预期现象。
-4. **最后看代码证据**：只看本章机制对应的关键代码，不需要从头背源码。
+1. **先记住 s09 的结论**：压缩能让当前会话继续，但它是有损的，也不等于长期记忆。
+2. **再看 s10 的新增问题**：用户偏好、项目事实、常用入口不应该只活在当前 `messages[]` 里。
+3. **重点理解索引和内容分离**：`MEMORY.md` 常驻，具体记忆按需加载。
+4. **最后跑练习**：观察偏好如何被提取、写入、索引，并在后续任务中重新加载。
 
 </div>
 
 ## 这一章解决什么
 
-s08 的 Compact 会保留当前任务摘要，但压缩是有损的；新开会话时，摘要也不会自动存在。用户偏好、项目背景、常用入口、反复反馈，如果只放在 Context 里，迟早会丢。
+### 从 s09 继承下来的能力
 
-这一章加入 Memory：把值得长期保留的信息写入文件系统，用索引常驻 System Prompt，相关内容按需加载回当前对话。
+s09 让长会话可以通过裁剪、占位、落盘和摘要继续运行。它解决的是当前会话里的 Context 压力。
 
-![Memory Overview](images/memory-overview.svg)
+但压缩摘要有两个边界：
+
+- 它会丢细节。
+- 新开会话时，它不会自动存在。
+
+### s09 留下的局限
+
+有些信息不只是“当前任务需要”，而是以后反复会用：
+
+- 用户偏好：默认用中文、缩进风格、沟通方式。
+- 项目事实：某个模块为什么这样设计。
+- 反复反馈：不要 mock 数据库、不要改生成文件。
+- 常用入口：排查文档、服务目录、测试命令。
+
+如果这些只放在 `messages[]` 里，迟早会被压缩、裁剪或随着会话结束丢失。
+
+### s10 的解决方案
+
+s10 加入 Memory：把值得长期保留的信息写入文件系统，用索引常驻 System Prompt，相关内容按需加载回当前对话。
+
+![Memory 机制概览](images/memory-overview.svg)
+
+它和 s08 Skill Loading 很像，都是“索引常驻、内容按需”。区别是：
+
+- Skill 是预先写好的任务流程知识。
+- Memory 是运行过程中沉淀下来的长期事实和偏好。
 
 ## 这一章你要练会什么
 
-这里的“练会”不是靠阅读完成。建议你先看上方机制演示，再运行本章 demo，对照后面的预期现象检查自己是否理解。
-
-
 - 区分短期 Context、压缩摘要和长期 Memory。
 - 用 Markdown + frontmatter 保存可读、可审计的记忆。
-- 让 Agent 在新一轮任务中按需加载相关记忆。
+- 让 Agent 在后续任务中按需加载相关记忆。
 - 设计提取和整理机制，避免记忆无限堆积。
 
 ## 核心概念（先看词，再看代码）
-
-遇到 Bash、Harness、dispatch、tool_use 这类词时，先把鼠标悬停在词上，看右侧解释。不要急着背代码，先理解它在产品里负责什么。
-
 
 | 概念 | PM 视角解释 |
 |------|-------------|
 | Memory | 跨压缩、跨会话仍有价值的信息。 |
 | `MEMORY.md` | 记忆索引，常驻 System Prompt。 |
-| relevant memory | 与当前任务相关的记忆，按需注入。 |
-| extraction | 每轮结束后判断是否有新偏好或项目事实要保存。 |
-| consolidation | 定期去重、合并、清理过时记忆。 |
+| 相关记忆 | 与当前任务相关的记忆，按需注入。 |
+| 记忆提取 | 每轮结束后判断是否有新偏好或项目事实要保存。 |
+| 记忆整理 | 定期去重、合并、清理过时记忆。 |
 
-![Memory Subsystems](images/memory-subsystems.svg)
+![Memory 子系统](images/memory-subsystems.svg)
+
+## 记忆文件长什么样
 
 记忆文件示例：
 
@@ -64,6 +85,15 @@ User prefers using tabs, not spaces, for indentation.
 **How to apply:** Always use tabs when writing or editing files.
 ```
 
+这段示例本身是文件内容，所以保留英文。换成中文理解就是：
+
+| 字段 | 含义 |
+|------|------|
+| `name` | 这条记忆的稳定名字。 |
+| `description` | 给索引用的短描述。 |
+| `type` | 记忆类型，例如用户偏好、项目事实、反馈、参考入口。 |
+| 正文 | 详细说明：是什么、为什么重要、以后怎么应用。 |
+
 四类记忆：
 
 | 类型 | 适合保存 |
@@ -73,9 +103,26 @@ User prefers using tabs, not spaces, for indentation.
 | project | 项目背景，例如某次重构的业务原因。 |
 | reference | 常用入口，例如文档、工单、排查位置。 |
 
-## 怎么用在真实工作流
+## Memory 的运行流程
 
-Memory 适合保存“以后还会用到”的信息：
+```text
+会话开始或每轮调用前
+  → 读取 MEMORY.md 索引
+  → 根据当前任务选择相关记忆
+  → 把相关内容注入当前 Context
+
+每轮结束后
+  → 判断是否有值得长期保存的新信息
+  → 写入 .memory/*.md
+  → 重建 MEMORY.md 索引
+  → 定期合并、去重、清理
+```
+
+关键点是：Memory 不是保存全部聊天。它只保存“以后还会用到”的信息。
+
+## 什么该记，什么不该记
+
+适合保存：
 
 - 用户明确说“记住这个”。
 - 多次反馈同一偏好。
@@ -89,6 +136,20 @@ Memory 适合保存“以后还会用到”的信息：
 - 敏感信息、密钥、隐私数据。
 - 已经过期或未经验证的结论。
 
+这是 Memory 最容易做坏的地方：记得太少，Agent 不连续；记得太多，Context 被污染，用户也失去信任。
+
+## 怎么用在真实工作流
+
+真实产品里，Memory 需要产品边界：
+
+- 用户应能看到 Agent 记住了什么。
+- 用户应能删除、修改、禁用某些记忆。
+- 敏感信息要默认不保存。
+- 记忆要有来源、时间和作用范围。
+- 冲突记忆要能被发现和合并。
+
+Memory 是信任功能，不只是提效功能。越是长期影响模型行为，越需要可解释和可治理。
+
 ## 动手练习：输入什么、会看到什么
 
 <div class="learning-card">
@@ -101,26 +162,36 @@ Memory 适合保存“以后还会用到”的信息：
 
 </div>
 
-
 ```sh
 # 在项目根目录运行。每行命令前的 # 是说明，不需要复制；没有 # 的行才需要执行。
 cd ~/learn-claude-code-main
+source .venv/bin/activate
 python3 s10_memory/code.py
 ```
 
 练习 prompt（逐条输入，不要一次全贴，分多轮输入）：
 
-1. `I prefer using tabs for indentation, not spaces. Remember that.`
-2. `Create a Python file called test.py`
-3. `What did I tell you about my preferences?`
-4. `I also prefer single quotes over double quotes for strings.`
+1. `我偏好使用 tab 缩进，而不是空格。请记住这个偏好。`
+2. `创建一个名为 test.py 的 Python 文件。`
+3. `我之前告诉过你什么偏好？`
+4. `我还偏好字符串使用单引号，而不是双引号。`
 
-对照预期现象：每轮结束后是否出现 `[Memory: extracted N new memories]`？`.memory/` 下是否生成 `.md` 文件？`MEMORY.md` 索引是否更新？新一轮对话是否加载了相关 Memory？
+对照预期现象：
+
+1. 每轮结束后是否出现 `[Memory: extracted N new memories]`。
+2. `.memory/` 下是否生成 `.md` 文件。
+3. `MEMORY.md` 索引是否更新。
+4. 新一轮对话是否加载了相关 Memory。
+
+## 本章小结
+
+s10 把“记住”从模型幻觉里拿出来，变成文件系统里可读、可审计、可删除的长期状态。
+
+s09 的 Compact 让当前会话继续；s10 的 Memory 让有价值的信息跨压缩、跨会话继续。两者不能混为一谈。
 
 ## 给产品经理的判断标准
 
 先用一个具体例子判断：内容 Agent 可以记住“标题不要夸张”“默认用简体中文”“引用必须带来源”。
-
 
 - Memory 是否只保存长期有价值的信息。
 - 记忆内容是否可读、可删除、可审计。
@@ -132,13 +203,12 @@ python3 s10_memory/code.py
 
 这一节给想看实现的人。新手可以先跳过；等你能说清楚本章机制解决什么产品问题，再回来读代码。
 
+教学版用 `.memory/` 本地目录、`MEMORY.md` 索引和 Markdown frontmatter 元数据。相关记忆选择先用 LLM 侧路查询，失败时用关键词降级。提取发生在本轮结束后，整理用简单文件数阈值触发。
 
-教学版用 `.memory/` 本地目录、`MEMORY.md` 索引和 Markdown frontmatter。相关记忆选择先用 LLM side-query，失败时用关键词降级。提取发生在本轮结束后，整理用简单文件数阈值触发。
-
-生产实现通常会更复杂：异步预取、防阻塞、文件锁、多会话门控、团队记忆、session memory、受限权限的提取子 Agent，以及更严格的注入预算。核心思想不变：索引常驻，内容按需，写入要克制，整理要低频。
+生产实现通常会更复杂：异步预取、防阻塞、文件锁、多会话门控、团队记忆、会话记忆、受限权限的提取子 Agent，以及更严格的注入预算。核心思想不变：索引常驻，内容按需，写入要克制，整理要低频。
 
 ## 下一章
 
 s11 System Prompt 会把前面这些能力组装起来。随着 Tool、Skill、Memory 增多，System Prompt 不应继续写成一大段硬编码字符串。
 
-<!-- translation-sync: zh@v2, en@v1, ja@v1 -->
+<!-- translation-sync: zh@v3, en@v1, ja@v1 -->

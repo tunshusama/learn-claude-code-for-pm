@@ -1,33 +1,33 @@
 {
   "version": "s08",
   "title": "Context Compact",
-  "description": "A layered compaction pipeline trims cheap context first and calls the LLM summary only when needed.",
+  "description": "分层压缩管线会先做便宜的上下文整理，只有必要时才调用 LLM 生成摘要。",
   "steps": [
     {
       "type": "system_event",
-      "content": "messages: 72 entries, tool_result output: 180k chars",
-      "annotation": "The context window is approaching the budget."
+      "content": "messages: 72 条，tool_result 输出：180k 字符",
+      "annotation": "Context window 正在接近预算。"
     },
     {
       "type": "system_event",
-      "content": "tool_result_budget -> persisted large output to .large_outputs/out_001.txt",
-      "annotation": "Large tool outputs are moved out before expensive summarization."
+      "content": "tool_result_budget -> 将大输出保存到 .large_outputs/out_001.txt",
+      "annotation": "大 Tool 输出会在昂贵摘要前先移出上下文。"
     },
     {
       "type": "system_event",
-      "content": "snip_compact -> trimmed middle messages\nmicro_compact -> replaced old tool_results with placeholders",
-      "annotation": "Cheap compaction layers run every turn."
+      "content": "snip_compact -> 裁掉中间消息\nmicro_compact -> 用占位符替换旧 tool_result",
+      "annotation": "便宜的压缩层每轮都会先运行。"
     },
     {
       "type": "system_event",
-      "content": "token estimate still above threshold -> compact_history()",
-      "annotation": "Only after cheap passes fail does the runtime ask the LLM for a summary."
+      "content": "token 估算仍超过阈值 -> compact_history()",
+      "annotation": "只有便宜压缩不够时，运行时才请求 LLM 生成摘要。"
     },
     {
       "type": "tool_result",
       "toolName": "compact",
-      "content": "Summary: user asked for parser refactor; files inspected: cli.py, parser.py; open task: add test.",
-      "annotation": "The compacted summary replaces older context while preserving task-relevant facts."
+      "content": "摘要：用户要求重构 parser；已检查文件：cli.py、parser.py；待办：添加测试。",
+      "annotation": "压缩摘要替代旧上下文，同时保留任务相关事实。"
     }
   ]
 }

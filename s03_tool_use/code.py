@@ -5,7 +5,7 @@ import glob
 import os
 import subprocess
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -70,7 +70,7 @@ def run_bash(command: str) -> str:
         return f"Error: {error}"
 
 
-def run_read(path: str, limit: int | None = None) -> str:
+def run_read(path: str, limit: Optional[int] = None) -> str:
     try:
         lines = safe_path(path).read_text(encoding="utf-8").splitlines()
         if limit and limit < len(lines):

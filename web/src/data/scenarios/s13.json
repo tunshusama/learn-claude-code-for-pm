@@ -1,45 +1,45 @@
 {
   "version": "s13",
   "title": "Background Tasks",
-  "description": "Long-running work moves to a thread while the agent keeps the main loop responsive.",
+  "description": "长时间运行的工作会移动到线程里，Agent 主循环保持响应。",
   "steps": [
     {
       "type": "user_message",
-      "content": "Run a long repository scan and tell me when it finishes.",
-      "annotation": "The user asks for work that may exceed the normal foreground loop."
+      "content": "运行一次耗时的仓库扫描，完成后告诉我。",
+      "annotation": "用户要求的工作可能超过普通前台循环的等待时间。"
     },
     {
       "type": "assistant_text",
-      "content": "I'll start the scan in the background so we can keep the conversation responsive.",
-      "annotation": "The model chooses the background path instead of blocking on the tool result."
+      "content": "我会把扫描放到后台启动，这样对话仍然保持响应。",
+      "annotation": "模型选择后台路径，而不是阻塞等待 Tool 结果。"
     },
     {
       "type": "tool_call",
       "toolName": "bash",
       "content": "rg \"TODO|FIXME\" .",
       "toolInput": "{\"background\":true}",
-      "annotation": "The tool call is wrapped with a background flag."
+      "annotation": "Tool 调用带上后台执行标记。"
     },
     {
       "type": "system_event",
       "content": "background_tasks[task_42] = Thread(target=run_bash)",
-      "annotation": "The runtime starts a thread and returns immediately."
+      "annotation": "运行时启动线程并立即返回。"
     },
     {
       "type": "tool_result",
       "toolName": "bash",
-      "content": "Started background task task_42.",
-      "annotation": "A placeholder result is appended to the main conversation."
+      "content": "已启动后台任务 task_42。",
+      "annotation": "占位结果会被追加到主对话。"
     },
     {
       "type": "system_event",
-      "content": "<task_notification id=\"task_42\" status=\"done\">Found 12 matches.</task_notification>",
-      "annotation": "The completed thread injects a notification back into the next loop."
+      "content": "<task_notification id=\"task_42\" status=\"done\">找到 12 处匹配。</task_notification>",
+      "annotation": "完成后的线程会把通知注入下一轮循环。"
     },
     {
       "type": "assistant_text",
-      "content": "The scan finished with 12 matches. I'll summarize the most important ones now.",
-      "annotation": "The agent consumes the background result as fresh context."
+      "content": "扫描完成，找到 12 处匹配。我现在总结最重要的几处。",
+      "annotation": "Agent 把后台结果作为新 Context 使用。"
     }
   ]
 }

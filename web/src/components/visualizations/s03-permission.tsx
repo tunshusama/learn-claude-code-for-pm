@@ -8,33 +8,33 @@ import { cn } from "@/lib/utils";
 
 const STEPS = [
   {
-    title: "Three Requests, Three Routes",
-    desc: "Permission is a router: safe calls run, risky calls ask, forbidden calls stop.",
+    title: "三个请求，三条路由",
+    desc: "Permission 像一个路由器：安全调用直接执行，风险调用先询问，禁止调用直接停止。",
     mode: "overview",
   },
   {
-    title: "Allow: Safe Read Runs Immediately",
-    desc: "A read-only file request passes policy and reaches the handler without a user ticket.",
+    title: "allow：安全读取立即执行",
+    desc: "只读文件请求通过权限策略，不需要用户确认就能进入处理函数。",
     mode: "allow",
   },
   {
-    title: "Ask: Risky Local Delete Becomes a Ticket",
-    desc: "A local delete command is not forbidden, but it must pause for explicit confirmation.",
+    title: "ask：有风险的本地删除变成确认单",
+    desc: "本地删除命令不一定被禁止，但必须暂停，等待用户明确确认。",
     mode: "ask",
   },
   {
-    title: "Approved Ask: Handler Runs After Yes",
-    desc: "The same risky request executes only after the user approves this exact action.",
+    title: "ask 已批准：确认后才执行",
+    desc: "同一个风险请求，只有在用户批准这次具体操作后才会执行。",
     mode: "ask-approved",
   },
   {
-    title: "Deny: Forbidden Pattern Stops Early",
-    desc: "A root-level sudo delete is blocked before any handler can touch the machine.",
+    title: "deny：禁止模式提前拦截",
+    desc: "根目录级别的 sudo 删除会在任何处理函数触碰机器前被拦截。",
     mode: "deny",
   },
   {
-    title: "One Permission Desk, Three Outcomes",
-    desc: "The harness keeps allow, ask, and deny decisions outside the model, then returns the decision to the loop.",
+    title: "一个权限检查台，三种结果",
+    desc: "Harness 把 allow、ask、deny 的决策放在模型之外，再把结果返回给循环。",
     mode: "summary",
   },
 ] as const;
@@ -45,7 +45,7 @@ const REQUESTS = [
     tool: "read_file",
     command: "README.md",
     result: "allow",
-    detail: "read-only workspace file",
+    detail: "只读工作区文件",
     tone: "emerald",
   },
   {
@@ -53,7 +53,7 @@ const REQUESTS = [
     tool: "bash",
     command: "rm -rf ./tmp/build-cache",
     result: "ask",
-    detail: "local destructive command",
+    detail: "本地破坏性命令",
     tone: "amber",
   },
   {
@@ -61,10 +61,20 @@ const REQUESTS = [
     tool: "bash",
     command: "sudo rm -rf /",
     result: "deny",
-    detail: "forbidden root delete",
+    detail: "禁止的根目录删除",
     tone: "red",
   },
 ] as const;
+
+const STATUS_LABELS: Record<"waiting" | "pass" | "allow" | "ask" | "approved" | "deny" | "skip", string> = {
+  waiting: "等待",
+  pass: "通过",
+  allow: "allow",
+  ask: "ask",
+  approved: "已批准",
+  deny: "deny",
+  skip: "跳过",
+};
 
 function toneClass(tone: "emerald" | "amber" | "red" | "blue" | "zinc") {
   if (tone === "emerald") return "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200";
@@ -142,7 +152,7 @@ function RequestCard({
       )}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="min-w-0 text-sm font-semibold">tool request</div>
+        <div className="min-w-0 text-sm font-semibold">工具请求</div>
         <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 font-mono text-xs font-semibold dark:bg-zinc-950/30">
           {request.tool}
         </span>
@@ -191,7 +201,7 @@ function CheckRow({
           {label}
         </div>
         <span className="shrink-0 rounded bg-white/70 px-2 py-0.5 text-[11px] font-semibold dark:bg-zinc-950/30">
-          {status}
+          {STATUS_LABELS[status]}
         </span>
       </div>
       <div className="text-xs leading-relaxed opacity-80">{detail}</div>
@@ -203,9 +213,9 @@ function PermissionDesk({ mode }: { mode: StepMode }) {
   if (mode === "overview" || mode === "summary") {
     return (
       <div className="grid gap-2">
-        <CheckRow label="Safe read" detail="No write, no shell, no approval needed." status="allow" active={mode === "overview"} />
-        <CheckRow label="Risky local change" detail="May be useful, but requires a human yes." status="ask" active={mode === "overview"} />
-        <CheckRow label="Forbidden pattern" detail="Root delete and sudo never reach handlers." status="deny" active={mode === "overview"} />
+        <CheckRow label="安全读取" detail="不写文件，不进 shell，不需要用户批准。" status="allow" active={mode === "overview"} />
+        <CheckRow label="有风险的本地变更" detail="可能有用，但需要用户明确同意。" status="ask" active={mode === "overview"} />
+        <CheckRow label="禁止模式" detail="根目录删除和 sudo 不会进入处理函数。" status="deny" active={mode === "overview"} />
       </div>
     );
   }
@@ -213,9 +223,9 @@ function PermissionDesk({ mode }: { mode: StepMode }) {
   if (mode === "allow") {
     return (
       <div className="space-y-2">
-        <CheckRow label="Gate 1: hard deny" detail="No sudo, no root path, no forbidden pattern." status="pass" active={false} />
-        <CheckRow label="Gate 2: allow rule" detail="Read-only workspace file can run immediately." status="allow" active />
-        <CheckRow label="Gate 3: user approval" detail="Skipped because this call is already safe." status="skip" active={false} />
+        <CheckRow label="Gate 1：硬性拒绝" detail="没有 sudo、根目录路径或禁止模式。" status="pass" active={false} />
+        <CheckRow label="Gate 2：allow 规则" detail="只读工作区文件可以立即执行。" status="allow" active />
+        <CheckRow label="Gate 3：用户确认" detail="这次调用已经安全，因此跳过确认。" status="skip" active={false} />
       </div>
     );
   }
@@ -223,18 +233,18 @@ function PermissionDesk({ mode }: { mode: StepMode }) {
   if (mode === "deny") {
     return (
       <div className="space-y-2">
-        <CheckRow label="Gate 1: hard deny" detail="sudo + root delete is blocked immediately." status="deny" active />
-        <CheckRow label="Gate 2: risk rule" detail="Skipped because hard deny already decided." status="skip" active={false} />
-        <CheckRow label="Gate 3: user approval" detail="Skipped because the user cannot approve forbidden actions." status="skip" active={false} />
+        <CheckRow label="Gate 1：硬性拒绝" detail="sudo 加根目录删除会立即被拦截。" status="deny" active />
+        <CheckRow label="Gate 2：风险规则" detail="硬性拒绝已经给出结果，因此跳过。" status="skip" active={false} />
+        <CheckRow label="Gate 3：用户确认" detail="禁止动作不能靠用户批准放行。" status="skip" active={false} />
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      <CheckRow label="Gate 1: hard deny" detail="Local project path is not globally forbidden." status="pass" active={false} />
-      <CheckRow label="Gate 2: risk rule" detail="Deleting files needs an explicit approval ticket." status="ask" active={mode === "ask"} />
-      <CheckRow label="Gate 3: user approval" detail="The tool waits until this request is approved." status={mode === "ask-approved" ? "approved" : "waiting"} active={mode === "ask-approved"} />
+      <CheckRow label="Gate 1：硬性拒绝" detail="本地项目路径不属于全局禁止范围。" status="pass" active={false} />
+      <CheckRow label="Gate 2：风险规则" detail="删除文件需要一张明确的确认单。" status="ask" active={mode === "ask"} />
+      <CheckRow label="Gate 3：用户确认" detail="工具会等待这次请求被批准。" status={mode === "ask-approved" ? "approved" : "waiting"} active={mode === "ask-approved"} />
     </div>
   );
 }
@@ -250,7 +260,7 @@ function CodeLine({ label, value }: { label: string; value: string }) {
 
 function Outcome({ mode }: { mode: StepMode }) {
   if (mode === "overview") {
-    return <div className="rounded-lg border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">select a request route</div>;
+    return <div className="rounded-lg border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">选择一条请求路由</div>;
   }
 
   if (mode === "allow") {
@@ -258,10 +268,10 @@ function Outcome({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("space-y-3 rounded-xl border p-4", toneClass("emerald"))}>
         <div className="flex items-center gap-2 text-base font-semibold">
           <PlayCircle size={17} />
-          Handler runs now
+          处理函数立即执行
         </div>
-        <CodeLine label="handler" value="read_file" />
-        <CodeLine label="args" value='path: "README.md"' />
+        <CodeLine label="处理函数" value="read_file" />
+        <CodeLine label="参数" value='path: "README.md"' />
       </motion.div>
     );
   }
@@ -271,9 +281,9 @@ function Outcome({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("rounded-xl border p-4", toneClass("amber"))}>
         <div className="mb-2 flex items-center gap-2 text-base font-semibold">
           <UserCheck size={17} />
-          Approval ticket
+          用户确认单
         </div>
-        <div className="text-sm leading-relaxed">"Allow deleting local build cache?"</div>
+        <div className="text-sm leading-relaxed">“允许删除本地构建缓存吗？”</div>
       </motion.div>
     );
   }
@@ -283,10 +293,10 @@ function Outcome({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("space-y-3 rounded-xl border p-4", toneClass("blue"))}>
         <div className="flex items-center gap-2 text-base font-semibold">
           <PlayCircle size={17} />
-          Handler runs after approval
+          批准后执行处理函数
         </div>
-        <CodeLine label="handler" value="bash" />
-        <CodeLine label="args" value="rm -rf ./tmp/build-cache" />
+        <CodeLine label="处理函数" value="bash" />
+        <CodeLine label="参数" value="rm -rf ./tmp/build-cache" />
       </motion.div>
     );
   }
@@ -296,9 +306,9 @@ function Outcome({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("rounded-xl border p-4", toneClass("red"))}>
         <div className="mb-2 flex items-center gap-2 text-base font-semibold">
           <OctagonAlert size={17} />
-          Blocked before handler
+          进入处理函数前被拦截
         </div>
-        <div className="text-sm leading-relaxed">No tool execution, no user prompt, no filesystem touch.</div>
+        <div className="text-sm leading-relaxed">不执行工具，不询问用户，也不触碰文件系统。</div>
       </motion.div>
     );
   }
@@ -317,9 +327,9 @@ function Outcome({ mode }: { mode: StepMode }) {
       <div className={cn("rounded-xl border p-4", toneClass("emerald"))}>
         <div className="mb-2 flex items-center gap-2 text-base font-semibold">
         <ShieldCheck size={17} />
-          decision returned to loop
+          决策返回给循环
         </div>
-        <div className="text-sm leading-relaxed">Permission stays outside the model, but the loop still receives a normal tool_result or blocked result.</div>
+        <div className="text-sm leading-relaxed">Permission 留在模型之外，但循环仍会收到正常的 tool_result 或被拦截的结果。</div>
       </div>
     </motion.div>
   );
@@ -335,12 +345,12 @@ export default function PermissionVisualization({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Permission Desk"}
+        {title || "权限检查台"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="grid gap-3 lg:grid-cols-[1fr_1.1fr_0.95fr]">
-          <Surface title="Tool requests" icon={<OctagonAlert size={20} />} active={mode === "overview" || activeId !== null}>
+          <Surface title="工具请求" icon={<OctagonAlert size={20} />} active={mode === "overview" || activeId !== null}>
             <div className="space-y-2">
               {REQUESTS.map((request) => (
                 <RequestCard
@@ -353,11 +363,11 @@ export default function PermissionVisualization({ title }: { title?: string }) {
             </div>
           </Surface>
 
-          <Surface title="Permission desk" icon={<ShieldCheck size={20} />} active={mode !== "overview"}>
+          <Surface title="权限检查台" icon={<ShieldCheck size={20} />} active={mode !== "overview"}>
             <PermissionDesk mode={mode} />
           </Surface>
 
-          <Surface title="Outcome" icon={<PlayCircle size={20} />} active={mode !== "overview"}>
+          <Surface title="结果" icon={<PlayCircle size={20} />} active={mode !== "overview"}>
             <AnimatePresence mode="wait">
               <Outcome key={mode} mode={mode} />
             </AnimatePresence>
@@ -365,7 +375,7 @@ export default function PermissionVisualization({ title }: { title?: string }) {
         </div>
 
         <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-300">
-          Beginner rule: the model proposes tools; the runtime routes each request to allow, ask, or deny before execution.
+          初学者规则：模型只负责提出工具调用；运行时会在执行前把每个请求路由到 allow、ask 或 deny。
         </div>
 
         <StepControls

@@ -1,33 +1,33 @@
 {
   "version": "s11",
   "title": "Error Recovery",
-  "description": "LLM calls are wrapped with targeted recovery paths for token limits, prompt overflow, and transient provider errors.",
+  "description": "LLM 调用外层会包一层有针对性的恢复路径，处理 token 上限、prompt 超限和临时服务错误。",
   "steps": [
     {
       "type": "system_event",
       "content": "try LLM call with max_tokens=8000",
-      "annotation": "The normal path is still a regular model call."
+      "annotation": "正常路径仍然是一次普通模型调用。"
     },
     {
       "type": "system_event",
-      "content": "error=max_tokens -> escalate to 64000 without appending a fake user message",
-      "annotation": "Token exhaustion gets a continuation-aware recovery path."
+      "content": "error=max_tokens -> 升级到 64000，不追加假的用户消息",
+      "annotation": "输出 token 耗尽会进入续写感知的恢复路径。"
     },
     {
       "type": "system_event",
-      "content": "error=prompt_too_long -> reactive_compact(messages) -> retry once",
-      "annotation": "Prompt overflow triggers compaction instead of blind retry."
+      "content": "error=prompt_too_long -> reactive_compact(messages) -> 重试一次",
+      "annotation": "Prompt 超限会触发压缩，而不是盲目重试。"
     },
     {
       "type": "system_event",
-      "content": "error=529 -> exponential backoff with jitter; repeated 529 -> fallback model",
-      "annotation": "Transient provider errors use backoff and model fallback."
+      "content": "error=529 -> 指数退避 + 抖动；连续 529 -> 备用模型",
+      "annotation": "临时服务错误使用退避和模型降级。"
     },
     {
       "type": "tool_call",
       "toolName": "read_file",
       "content": "{\"path\":\"README.md\"}",
-      "annotation": "After recovery succeeds, the agent continues the normal tool loop."
+      "annotation": "恢复成功后，Agent 继续正常 Tool 循环。"
     }
   ]
 }

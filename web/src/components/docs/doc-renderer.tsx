@@ -346,16 +346,37 @@ function extractCodeWalkthroughs(html: string): {
   walkthroughs: CodeWalkthroughBlock[];
 } {
   const walkthroughs: CodeWalkthroughBlock[] = [];
+
+  const stripTags = (value: string) => value.replace(/<[^>]+>/g, "");
+
+  const countCodeLines = (codeBlock: string) => {
+    const codeMatch = codeBlock.match(/<code[^>]*>([\s\S]*?)<\/code>/);
+    const rawCode = stripTags(codeMatch ? codeMatch[1] : codeBlock)
+      .replace(/&nbsp;/g, " ")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+    return rawCode.replace(/\s+$/, "").split(/\r?\n/).length;
+  };
+
+  const codeTitle = (codeBlock: string) => {
+    const language = codeBlock.match(/data-language="([^"]+)"/)?.[1];
+    if (!language) return "代码片段";
+    if (language === "python") return "Python 代码";
+    if (language === "text") return "代码片段";
+    return `${language} 代码`;
+  };
+
   const nextHtml = html.replace(
-    /<p>(最小循环长这样：|这是 s03 最重要的结论。先看 <code>agent_loop\(\)<\/code> 的核心部分：)<\/p>\s*(<pre class="code-block"[\s\S]*?<\/pre>)\s*<p>逐行读：<\/p>\s*(<div class="table-scroll"><table>[\s\S]*?<\/table><\/div>)/g,
-    (_match, intro: string, codeBlock: string, tableBlock: string) => {
-      const isAgentLoopCore = intro.includes("agent_loop");
-      const title = isAgentLoopCore ? "agent_loop() 核心部分" : "最小循环长这样";
+    /((?:<p>(?!逐行读：)[\s\S]*?<\/p>\s*)?)(<pre class="code-block"[\s\S]*?<\/pre>)\s*<p>逐行读：<\/p>\s*(<div class="table-scroll"><table>[\s\S]*?<\/table><\/div>)/g,
+    (match, introHtml: string, codeBlock: string, tableBlock: string) => {
+      if (countCodeLines(codeBlock) <= 10) return match;
+
       const id = `code-walkthrough-${walkthroughs.length}`;
       walkthroughs.push({
         id,
-        introHtml: isAgentLoopCore ? `<p>${intro}</p>` : undefined,
-        title,
+        introHtml: introHtml.trim() || undefined,
+        title: codeTitle(codeBlock),
         codeHtml: codeBlock,
         tableHtml: tableBlock,
       });

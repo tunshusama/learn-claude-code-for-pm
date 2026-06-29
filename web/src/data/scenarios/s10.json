@@ -1,27 +1,27 @@
 {
   "version": "s10",
   "title": "System Prompt",
-  "description": "The system prompt is assembled from runtime state and cached by a deterministic context key.",
+  "description": "System Prompt 由运行时状态组装，并用确定性的 context key 做缓存。",
   "steps": [
     {
       "type": "system_event",
       "content": "context={workspace:\"/repo\", memories:true, skills:[\"code-review\"], tools:[\"bash\",\"read_file\"]}",
-      "annotation": "Prompt inputs are explicit runtime data."
+      "annotation": "Prompt 输入是明确的运行时数据。"
     },
     {
       "type": "system_event",
       "content": "cache miss -> assemble_system_prompt(context)",
-      "annotation": "A new context key causes sections to be selected and joined."
+      "annotation": "新的 context key 会触发 section 选择和拼接。"
     },
     {
       "type": "assistant_text",
-      "content": "I can use the workspace, memory index, tool guidance, and available skills for this task.",
-      "annotation": "The LLM sees the assembled prompt, not a hardcoded static string."
+      "content": "我可以在这个任务里使用工作区、Memory 索引、Tool 指引和可用 Skill。",
+      "annotation": "LLM 看到的是组装后的 Prompt，而不是硬编码静态字符串。"
     },
     {
       "type": "system_event",
-      "content": "same context key -> reuse cached prompt",
-      "annotation": "Repeated turns avoid rebuilding identical prompt text."
+      "content": "same context key -> 复用缓存 Prompt",
+      "annotation": "重复轮次会避免重新构建相同 Prompt 文本。"
     }
   ]
 }

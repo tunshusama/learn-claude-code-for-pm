@@ -1,40 +1,40 @@
 {
   "version": "s06",
   "title": "Subagent",
-  "description": "The task tool spawns a fresh subagent context and returns only a final summary to the parent.",
+  "description": "task Tool 会启动一个干净的子 Agent 上下文，并且只把最终摘要返回给父 Agent。",
   "steps": [
     {
       "type": "user_message",
-      "content": "Explore how the CLI parser works without polluting this main context.",
-      "annotation": "The user asks for exploratory work that can be isolated."
+      "content": "探索 CLI parser 的工作方式，但不要污染主上下文。",
+      "annotation": "用户要求的是适合隔离出去的探索性工作。"
     },
     {
       "type": "tool_call",
       "toolName": "task",
-      "content": "{\"prompt\":\"Explore the CLI parser and summarize the control flow.\"}",
-      "annotation": "The parent delegates through the task tool."
+      "content": "{\"prompt\":\"探索 CLI parser，并总结控制流。\"}",
+      "annotation": "父 Agent 通过 task Tool 委派任务。"
     },
     {
       "type": "system_event",
       "content": "spawn_subagent: messages=[{role:\"user\", content: prompt}], tools=bash/read/write/edit/glob",
-      "annotation": "The child receives a fresh message history and no recursive task tool."
+      "annotation": "子 Agent 收到一份新的消息历史，并且没有递归 task Tool。"
     },
     {
       "type": "tool_call",
       "toolName": "read_file",
       "content": "{\"path\":\"cli.py\"}",
-      "annotation": "Inside the child loop, intermediate tool calls stay private."
+      "annotation": "在子 Agent loop 里，中间 Tool 调用不会进入父上下文。"
     },
     {
       "type": "tool_result",
       "toolName": "task",
-      "content": "Summary: cli.py parses args, selects a command handler, then dispatches.",
-      "annotation": "Only the subagent's final summary returns to the parent."
+      "content": "摘要：cli.py 解析参数，选择命令 handler，然后分发执行。",
+      "annotation": "只有子 Agent 的最终摘要会返回给父 Agent。"
     },
     {
       "type": "assistant_text",
-      "content": "The parser is isolated in cli.py and dispatches by command name. I'll use that summary in the main plan.",
-      "annotation": "The parent avoids carrying every exploratory detail."
+      "content": "parser 的逻辑隔离在 cli.py 中，并按命令名分发。我会在主计划里使用这个摘要。",
+      "annotation": "父 Agent 不需要携带所有探索细节。"
     }
   ]
 }

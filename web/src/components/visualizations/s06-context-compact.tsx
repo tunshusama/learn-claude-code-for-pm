@@ -101,7 +101,7 @@ function computeStepState(step: number): StepState {
         blocks,
         tokenCount,
         fillPercent: 60,
-        compressionLabel: "MICRO-COMPACT",
+        compressionLabel: "微压缩",
       };
     }
     case 4: {
@@ -119,7 +119,7 @@ function computeStepState(step: number): StepState {
       const summaryBlock = {
         id: "auto-summary",
         type: "assistant" as BlockType,
-        label: "SUMMARY",
+        label: "摘要",
         heightPx: 40,
         compressed: false,
       };
@@ -131,7 +131,7 @@ function computeStepState(step: number): StepState {
         blocks: [summaryBlock, ...recentBlocks],
         tokenCount,
         fillPercent: 25,
-        compressionLabel: "AUTO-COMPACT",
+        compressionLabel: "自动压缩",
       };
     }
     case 6: {
@@ -139,7 +139,7 @@ function computeStepState(step: number): StepState {
       const compactBlock = {
         id: "compact-summary",
         type: "assistant" as BlockType,
-        label: "COMPACT SUMMARY",
+        label: "压缩摘要",
         heightPx: 24,
         compressed: false,
       };
@@ -157,39 +157,39 @@ function computeStepState(step: number): StepState {
 
 const STEPS = [
   {
-    title: "Growing Context",
+    title: "Context 开始增长",
     description:
-      "The context window holds the conversation. Each API call adds more messages.",
+      "Context window 保存对话。每次 API 调用都会追加更多消息。",
   },
   {
-    title: "Context Growing",
+    title: "Context 持续增长",
     description:
-      "As the agent works, messages accumulate. The context window fills up.",
+      "Agent 工作时，消息不断累积，Context window 会逐渐填满。",
   },
   {
-    title: "Approaching Limit",
+    title: "接近上限",
     description:
-      "Old tool_results are the biggest consumers. Micro-compact targets these first.",
+      "旧 tool_result 往往最占空间。微压缩会先处理它们。",
   },
   {
-    title: "Stage 1: Micro-Compact",
+    title: "阶段 1：微压缩",
     description:
-      "Replace old tool_results with short summaries. Automatic, transparent to the model.",
+      "用短摘要替换旧 tool_result。这个过程自动发生，对模型透明。",
   },
   {
-    title: "Still Growing",
+    title: "继续增长",
     description:
-      "Work continues. Context grows again toward the threshold...",
+      "工作继续，Context 又朝阈值增长……",
   },
   {
-    title: "Stage 2: Auto-Compact",
+    title: "阶段 2：自动压缩",
     description:
-      "Entire conversation summarized into a compact block. Triggered at token threshold.",
+      "整段对话被总结成一个紧凑块，在 token 到达阈值时触发。",
   },
   {
-    title: "Stage 3: /compact",
+    title: "阶段 3：/compact",
     description:
-      "User-triggered, most aggressive. Three layers of strategic forgetting enable infinite sessions.",
+      "由用户触发，最激进。通过分层“有策略地遗忘”，让长会话能继续。",
   },
 ];
 
@@ -197,8 +197,8 @@ const COMPRESSION_LAYERS = [
   {
     label: "Micro",
     full: "MICRO-COMPACT",
-    trigger: "old tool_result",
-    action: "shrink bulky outputs",
+    trigger: "旧 tool_result",
+    action: "缩小大块输出",
     step: 3,
     classes:
       "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200",
@@ -206,8 +206,8 @@ const COMPRESSION_LAYERS = [
   {
     label: "Auto",
     full: "AUTO-COMPACT",
-    trigger: "token threshold",
-    action: "summarize the conversation",
+    trigger: "token 阈值",
+    action: "总结整段对话",
     step: 5,
     classes:
       "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200",
@@ -215,8 +215,8 @@ const COMPRESSION_LAYERS = [
   {
     label: "Manual",
     full: "/compact",
-    trigger: "user command",
-    action: "keep one compact summary",
+    trigger: "用户命令",
+    action: "保留一个紧凑摘要",
     step: 6,
     classes:
       "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200",
@@ -248,7 +248,7 @@ export default function ContextCompact({ title }: { title?: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Three-Layer Context Compression"}
+        {title || "三层 Context 压缩"}
       </h2>
 
       <div
@@ -328,7 +328,7 @@ export default function ContextCompact({ title }: { title?: string }) {
             <div>
               <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Token usage
+                  Token 使用量
                 </span>
                 <span className="break-words font-mono text-xs text-zinc-500 dark:text-zinc-400">
                   {state.tokenCount.toLocaleString()} / {MAX_TOKENS.toLocaleString()}
@@ -378,7 +378,7 @@ export default function ContextCompact({ title }: { title?: string }) {
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold">{layer.label}</span>
                       <span className="rounded bg-white/70 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-900/60">
-                        {reached ? "used" : "waiting"}
+                        {reached ? "已使用" : "等待中"}
                       </span>
                     </div>
                     <div className="mt-2 space-y-1 text-[11px] leading-snug">
@@ -400,10 +400,10 @@ export default function ContextCompact({ title }: { title?: string }) {
                   className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-700 dark:bg-amber-900/20"
                 >
                   <div className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-                    tool_results are the largest blocks
+                    tool_result 是最大的消息块
                   </div>
                   <div className="text-[11px] leading-snug text-amber-600 dark:text-amber-400">
-                    File contents, command outputs, search results -- each one is thousands of tokens.
+                    文件内容、命令输出、搜索结果，每一类都可能占用上千 tokens。
                   </div>
                 </motion.div>
               )}
@@ -442,9 +442,9 @@ export default function ContextCompact({ title }: { title?: string }) {
                           ? "text-blue-500 dark:text-blue-400"
                           : "text-emerald-500 dark:text-emerald-400"
                     }`}>
-                      {currentStep === 3 && "Old tool_results shrunk to tiny summaries"}
-                      {currentStep === 5 && "Full conversation compressed to summary block"}
-                      {currentStep === 6 && "Most aggressive compression -- near-empty context"}
+                      {currentStep === 3 && "旧 tool_result 被缩成短摘要"}
+                      {currentStep === 5 && "完整对话被压缩成摘要块"}
+                      {currentStep === 6 && "最激进的压缩：Context 接近清空"}
                     </div>
                   </div>
                 </motion.div>
@@ -465,7 +465,7 @@ export default function ContextCompact({ title }: { title?: string }) {
                     className={`flex flex-col gap-1 rounded px-3 py-2 sm:flex-row sm:items-center sm:justify-between ${layer.classes}`}
                   >
                     <span className="break-words text-xs">
-                      Stage {index + 1}: {layer.label} -- {layer.action}
+                      阶段 {index + 1}: {layer.label} - {layer.action}
                     </span>
                     <span className="shrink-0 font-mono text-[10px] opacity-80">
                       {layer.trigger}

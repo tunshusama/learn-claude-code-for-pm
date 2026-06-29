@@ -1,44 +1,44 @@
 {
   "version": "s14",
   "title": "Cron Scheduler",
-  "description": "A daemon loop watches durable cron definitions, queues due jobs, and lets the agent process them.",
+  "description": "守护线程会观察持久化 cron 定义，把到期任务放进队列，再让 Agent 处理。",
   "steps": [
     {
       "type": "user_message",
-      "content": "Every weekday morning, remind me to review open tasks.",
-      "annotation": "The user asks for a recurring future action."
+      "content": "每个工作日早上提醒我 review 未完成任务。",
+      "annotation": "用户要求的是未来重复发生的动作。"
     },
     {
       "type": "assistant_text",
-      "content": "I'll create a cron job and store it so the scheduler can pick it up later.",
-      "annotation": "The agent delegates recurrence to the scheduler instead of relying on current context."
+      "content": "我会创建一个 cron 任务并保存，后续由调度器拾取。",
+      "annotation": "Agent 把重复触发交给调度器，而不是依赖当前 Context。"
     },
     {
       "type": "tool_call",
       "toolName": "schedule_cron",
       "content": "{\"name\":\"review-open-tasks\",\"cron\":\"0 9 * * 1-5\",\"prompt\":\"Review open tasks and summarize blockers.\"}",
-      "annotation": "The new tool validates and persists a cron definition."
+      "annotation": "新 Tool 会校验并持久化 cron 定义。"
     },
     {
       "type": "tool_result",
       "toolName": "schedule_cron",
-      "content": "Scheduled review-open-tasks with id cron_7.",
-      "annotation": "The job is written to the durable schedule store."
+      "content": "已调度 review-open-tasks，ID 为 cron_7。",
+      "annotation": "任务被写入持久化调度存储。"
     },
     {
       "type": "system_event",
-      "content": "cron_scheduler_loop: cron_7 matched current minute -> cron_queue.put(cron_7)",
-      "annotation": "The independent scheduler daemon detects that the job is due."
+      "content": "cron_scheduler_loop: cron_7 匹配当前分钟 -> cron_queue.put(cron_7)",
+      "annotation": "独立调度守护线程检测到任务到期。"
     },
     {
       "type": "system_event",
-      "content": "queue_processor_loop: dequeued cron_7 and invoked agent_loop(prompt)",
-      "annotation": "A separate processor turns due jobs into normal agent work."
+      "content": "queue_processor_loop: 取出 cron_7 并调用 agent_loop(prompt)",
+      "annotation": "独立处理器把到期任务变成普通 Agent 工作。"
     },
     {
       "type": "assistant_text",
-      "content": "Scheduled. When the cron fires, the queue processor will run the reminder prompt through the agent loop.",
-      "annotation": "The final answer explains the durable recurring behavior."
+      "content": "已调度。cron 触发时，队列处理器会把提醒 prompt 交给 Agent Loop。",
+      "annotation": "最终回答解释持久化周期行为。"
     }
   ]
 }

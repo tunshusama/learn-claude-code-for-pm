@@ -12,38 +12,38 @@ interface StepInfo {
 
 const STEP_INFO: StepInfo[] = [
   {
-    title: "Three Lanes",
+    title: "三条执行线",
     description:
-      "The agent has a main thread and can spawn daemon background threads for parallel work.",
+      "Agent 有一条主线程，也可以启动后台守护线程并行工作。",
   },
   {
-    title: "Main Thread Working",
+    title: "主线程工作中",
     description:
-      "The main agent loop runs as usual, processing user requests.",
+      "主 Agent loop 像往常一样运行，处理用户请求。",
   },
   {
-    title: "Spawn Background",
+    title: "启动后台任务",
     description:
-      "Background tasks run as daemon threads. The main loop doesn't wait for them.",
+      "后台任务作为守护线程运行，主循环不会原地等待。",
   },
   {
-    title: "Multiple Backgrounds",
-    description: "Multiple background tasks can run concurrently.",
+    title: "多个后台任务",
+    description: "多个后台任务可以并发运行。",
   },
   {
-    title: "Task Completes",
+    title: "任务完成",
     description:
-      "Background task finishes. Its result goes to the notification queue.",
+      "后台任务完成后，结果进入通知队列。",
   },
   {
-    title: "Queue Fills",
+    title: "队列累积",
     description:
-      "Results accumulate in the queue, invisible to the model during this turn.",
+      "结果在队列中累积，本轮内模型还看不到它们。",
   },
   {
-    title: "Drain Queue",
+    title: "清空队列",
     description:
-      "Just before the next LLM call, all queued notifications are injected as tool_results. Non-blocking, async.",
+      "下一次 LLM 调用前，所有排队通知会作为 tool_result 注入。非阻塞，异步。",
   },
 ];
 
@@ -76,7 +76,7 @@ const WORK_BLOCKS: WorkBlock[] = [
     startFraction: 0,
     endFraction: 1,
     color: "#8b5cf6",
-    label: "Main agent loop",
+    label: "主 Agent loop",
     appearsAtStep: 1,
   },
   {
@@ -84,7 +84,7 @@ const WORK_BLOCKS: WorkBlock[] = [
     startFraction: 0.18,
     endFraction: 0.75,
     color: "#10b981",
-    label: "Run tests",
+    label: "运行测试",
     appearsAtStep: 2,
     completesAtStep: 5,
   },
@@ -93,7 +93,7 @@ const WORK_BLOCKS: WorkBlock[] = [
     startFraction: 0.35,
     endFraction: 0.58,
     color: "#3b82f6",
-    label: "Lint code",
+    label: "检查代码",
     appearsAtStep: 3,
     completesAtStep: 4,
   },
@@ -120,13 +120,13 @@ interface QueueCard {
 const QUEUE_CARDS: QueueCard[] = [
   {
     id: "lint-result",
-    label: "Lint: 0 errors",
+    label: "Lint：0 个错误",
     appearsAtStep: 4,
     drainsAtStep: 6,
   },
   {
     id: "test-result",
-    label: "Tests: 42 passed",
+    label: "测试：42 个通过",
     appearsAtStep: 5,
     drainsAtStep: 6,
   },
@@ -170,11 +170,11 @@ export default function BackgroundTasks({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Background Task Lanes"}
+        {title || "后台任务执行线"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-        <svg viewBox="0 0 780 380" className="w-full" aria-label="Background task lanes">
+        <svg viewBox="0 0 780 380" className="w-full" aria-label="后台任务执行线">
           <defs>
             <marker
               id="forkArrow"
@@ -237,15 +237,15 @@ export default function BackgroundTasks({ title }: { title?: string }) {
             fill={palette.labelFill}
             textAnchor="end"
           >
-            time
+            时间
           </text>
 
           {/* Lane backgrounds and labels */}
           {(
             [
-              { key: "main", y: LANE_Y.main, label: "Main Thread" },
-              { key: "bg1", y: LANE_Y.bg1, label: "Background 1" },
-              { key: "bg2", y: LANE_Y.bg2, label: "Background 2" },
+              { key: "main", y: LANE_Y.main, label: "主线程" },
+              { key: "bg1", y: LANE_Y.bg1, label: "后台 1" },
+              { key: "bg2", y: LANE_Y.bg2, label: "后台 2" },
             ] as const
           ).map(({ key, y, label }) => (
             <g key={key}>
@@ -335,7 +335,7 @@ export default function BackgroundTasks({ title }: { title?: string }) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
-                    done
+                    完成
                   </motion.text>
                 )}
               </motion.g>
@@ -399,7 +399,7 @@ export default function BackgroundTasks({ title }: { title?: string }) {
                 fontWeight="600"
                 fill="white"
               >
-                LLM API call
+                LLM API 调用
               </text>
             </motion.g>
           )}
@@ -423,7 +423,7 @@ export default function BackgroundTasks({ title }: { title?: string }) {
             fontWeight="600"
             fill={palette.labelFill}
           >
-            Notification
+            通知
           </text>
           <text
             x={TIMELINE_LEFT - 10}
@@ -433,7 +433,7 @@ export default function BackgroundTasks({ title }: { title?: string }) {
             fontWeight="600"
             fill={palette.labelFill}
           >
-            Queue
+            队列
           </text>
 
           {/* Queue cards */}
@@ -574,7 +574,7 @@ export default function BackgroundTasks({ title }: { title?: string }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              queue drained -- injected into next LLM call
+              队列已清空 - 已注入下一次 LLM 调用
             </motion.text>
           )}
         </svg>
@@ -584,25 +584,25 @@ export default function BackgroundTasks({ title }: { title?: string }) {
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded" style={{ background: "#8b5cf6" }} />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              Main thread
+              主线程
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded" style={{ background: "#10b981" }} />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              Background 1
+              后台 1
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded" style={{ background: "#3b82f6" }} />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              Background 2
+              后台 2
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded" style={{ background: "#f59e0b" }} />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              LLM boundary
+              LLM 边界
             </span>
           </div>
         </div>

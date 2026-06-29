@@ -22,62 +22,62 @@ const MEMORY_FILES: MemoryFile[] = [
   {
     id: "visual-preference",
     type: "feedback",
-    title: "Beginner visual preference",
+    title: "新手视觉偏好",
     filename: "lcc_visual_preference.md",
-    description: "Use concrete mental models for LCC web pages.",
-    body: "Prefer cards, boards, shelves, and workbenches over abstract flowcharts.",
+    description: "LCC 网页应使用具体的心智模型。",
+    body: "优先使用卡片、看板、书架、工作台，而不是抽象流程图。",
     relevant: true,
   },
   {
     id: "project-path",
     type: "project",
-    title: "LCC web paths",
+    title: "LCC web 路径",
     filename: "lcc_web_paths.md",
-    description: "Web app reads root lesson folders and generated JSON.",
-    body: "Build from web/, extract content from s01-s20 lesson directories.",
+    description: "Web app 读取根目录课程文件夹和生成的 JSON。",
+    body: "从 web/ 构建，并从 s01-s20 课程目录抽取内容。",
   },
   {
     id: "test-command",
     type: "reference",
-    title: "Verification commands",
+    title: "验证命令",
     filename: "lcc_test_commands.md",
-    description: "Useful smoke checks for the course website.",
-    body: "Run npm run build, then browser-check /zh/s09 and /zh/s20.",
+    description: "课程网站常用 smoke check。",
+    body: "运行 npm run build，然后在浏览器检查 /zh/s09 和 /zh/s20。",
   },
 ];
 
 const STEPS = [
   {
-    title: "A Fact Worth Keeping",
-    desc: "The user says something that should survive future sessions.",
+    title: "值得保留的事实",
+    desc: "用户说了一条应该跨会话保留的信息。",
   },
   {
-    title: "Stamp It After the Turn",
-    desc: "Memory extraction happens after useful work, so the main loop stays focused.",
+    title: "本轮结束后盖章",
+    desc: "Memory 提取发生在有用工作之后，因此主循环可以保持专注。",
   },
   {
-    title: "Write One Memory File",
-    desc: "The durable detail goes into a Markdown file with a readable title and metadata.",
+    title: "写入一个 Memory 文件",
+    desc: "持久细节写进带有可读标题和元数据的 Markdown 文件。",
   },
   {
-    title: "Update the Catalog",
-    desc: "MEMORY.md is the cheap catalog: short enough to keep nearby.",
+    title: "更新目录",
+    desc: "MEMORY.md 是便宜目录，足够短，可以常驻附近。",
   },
   {
-    title: "A Future Request Arrives",
-    desc: "Later, the agent sees a new request and the catalog, not the whole library.",
+    title: "未来请求到来",
+    desc: "稍后 Agent 看到的是新请求和目录，而不是整座资料库。",
   },
   {
-    title: "Catalog Picks One",
-    desc: "Selection chooses the one memory file that is relevant now.",
+    title: "目录选中一条",
+    desc: "选择逻辑挑出当前相关的那一个 Memory 文件。",
   },
   {
-    title: "Build the Reading Stack",
-    desc: "Only the selected memory joins the current request before the model call.",
+    title: "构建读取栈",
+    desc: "模型调用前，只有被选中的 Memory 会加入当前请求。",
   },
   {
-    title: "Continuity Without Clutter",
-    desc: "The answer reflects old context while unrelated memories stay on the shelf.",
+    title: "连续但不杂乱",
+    desc: "回答会体现旧上下文，同时无关 Memory 仍留在架子上。",
   },
 ] as const;
 
@@ -193,7 +193,7 @@ function MemoryDetail({ file, selected }: { file: MemoryFile; selected: boolean 
         {selected && (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-violet-500 px-2.5 py-1 text-xs font-semibold text-white">
             <CheckCircle2 size={13} />
-            selected
+            已选中
           </span>
         )}
       </div>
@@ -225,12 +225,12 @@ export default function MemoryVisualization({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Memory Library"}
+        {title || "Memory 资料库"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="mb-4 grid gap-2 text-sm sm:grid-cols-3">
-          {["learn", "catalog", "recall"].map((label, index) => {
+          {["学习", "目录", "回忆"].map((label, index) => {
             const active =
               (index === 0 && step <= 2) ||
               (index === 1 && (step === 3 || selected)) ||
@@ -239,7 +239,7 @@ export default function MemoryVisualization({ title }: { title?: string }) {
               <div
                 key={label}
                 className={cn(
-                  "rounded-lg px-3 py-2 font-medium capitalize",
+                  "rounded-lg px-3 py-2 font-medium",
                   active
                     ? "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200"
                     : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300"
@@ -252,9 +252,9 @@ export default function MemoryVisualization({ title }: { title?: string }) {
         </div>
 
         <div className="grid gap-3 xl:grid-cols-2">
-          <Surface title="Session A: learn" icon={<Inbox size={20} />} active={step <= 2}>
+          <Surface title="会话 A：学习" icon={<Inbox size={20} />} active={step <= 2}>
             <div className="space-y-3">
-              <QuoteCard>"Please keep LCC pages concrete for beginners."</QuoteCard>
+              <QuoteCard>“请让 LCC 页面尽量对新手具体可感。”</QuoteCard>
               <AnimatePresence>
                 {step >= 1 && (
                   <motion.div
@@ -264,8 +264,8 @@ export default function MemoryVisualization({ title }: { title?: string }) {
                     exit={{ opacity: 0 }}
                     className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
                   >
-                    <div className="mb-1 text-base font-semibold">Memory extractor stamp</div>
-                    Save a durable preference after the useful work is done.
+                    <div className="mb-1 text-base font-semibold">Memory 提取器盖章</div>
+                    有用工作完成后，再保存一个持久偏好。
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -275,32 +275,32 @@ export default function MemoryVisualization({ title }: { title?: string }) {
             </div>
           </Surface>
 
-          <Surface title="Session B: recall" icon={selected ? <Search size={20} /> : <Sparkles size={20} />} active={futureVisible}>
+          <Surface title="会话 B：回忆" icon={selected ? <Search size={20} /> : <Sparkles size={20} />} active={futureVisible}>
             <div className="space-y-3">
-              {!futureVisible && <EmptyState label="future request has not arrived" />}
-              {futureVisible && <QuoteCard>"Continue improving the web lesson visuals."</QuoteCard>}
+              {!futureVisible && <EmptyState label="未来请求尚未到来" />}
+              {futureVisible && <QuoteCard>“继续改进网页课程的可视化。”</QuoteCard>}
               {selected && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm leading-relaxed text-violet-900 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-200"
                 >
-                  Catalog search selects <span className="font-mono">lcc_visual_preference.md</span>
+                  目录搜索选中了 <span className="font-mono">lcc_visual_preference.md</span>
                 </motion.div>
               )}
               {injected && (
                 <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                   <div className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                    Reading stack before LLM
+                    LLM 调用前的读取栈
                   </div>
                   <div className="grid gap-2">
-                    <div className="rounded-lg bg-zinc-100 px-3 py-2 text-sm dark:bg-zinc-800">current request</div>
+                    <div className="rounded-lg bg-zinc-100 px-3 py-2 text-sm dark:bg-zinc-800">当前请求</div>
                     <div className="rounded-lg bg-violet-100 px-3 py-2 text-sm text-violet-800 dark:bg-violet-900/30 dark:text-violet-200">
-                      selected memory detail
+                      被选中的 Memory 详情
                     </div>
                     {step >= 7 && (
                       <div className="rounded-lg bg-emerald-100 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200">
-                        answer keeps the user's preference
+                        回答保留用户偏好
                       </div>
                     )}
                   </div>
@@ -311,7 +311,7 @@ export default function MemoryVisualization({ title }: { title?: string }) {
         </div>
 
         <Surface
-          title=".memory library"
+          title=".memory 资料库"
           icon={<BookOpen size={20} />}
           active={catalogVisible || selected}
           className="mt-3"
@@ -320,7 +320,7 @@ export default function MemoryVisualization({ title }: { title?: string }) {
             <div className="min-w-0 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/70">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
                 <FileText size={16} />
-                MEMORY.md catalog
+                MEMORY.md 目录
               </div>
               <div className="space-y-2">
                 {MEMORY_FILES.map((file, index) => (
@@ -331,13 +331,13 @@ export default function MemoryVisualization({ title }: { title?: string }) {
                     selected={selected && file.relevant === true}
                   />
                 ))}
-                {!catalogVisible && <EmptyState label="catalog has not been rebuilt yet" />}
+                {!catalogVisible && <EmptyState label="目录尚未重建" />}
               </div>
             </div>
 
             <div className="min-w-0">
               <div className="mb-3 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                Memory file preview
+                Memory 文件预览
               </div>
               {step >= 2 ? (
                 <div className="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(220px,0.85fr)]">
@@ -353,7 +353,7 @@ export default function MemoryVisualization({ title }: { title?: string }) {
                             {file.title}
                           </div>
                           <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold", typeClass(file.type))}>
-                            not loaded
+                            未加载
                           </span>
                         </div>
                         <div className="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
@@ -364,14 +364,14 @@ export default function MemoryVisualization({ title }: { title?: string }) {
                   </div>
                 </div>
               ) : (
-                <EmptyState label="no files on the shelf yet" />
+                <EmptyState label="架子上还没有文件" />
               )}
             </div>
           </div>
         </Surface>
 
         <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-          Beginner rule: the catalog stays cheap and readable; full memory files are borrowed only when the current request needs them.
+          新手规则：目录保持便宜且可读；完整 Memory 文件只在当前请求需要时才借出来。
         </div>
 
         <StepControls

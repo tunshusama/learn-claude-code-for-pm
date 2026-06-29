@@ -242,11 +242,11 @@ body {
 }
 
 .prose-custom .code-walkthrough-reading {
-  height: calc(var(--walkthrough-code-height, auto) + 1.625rem);
+  overflow: hidden;
 }
 
 .prose-custom .code-walkthrough-code-html,
-.prose-custom .code-walkthrough-table-html {
+.prose-custom .code-walkthrough-table-scroll {
   min-height: 0;
   min-width: 0;
 }
@@ -869,6 +869,29 @@ body {
 
 .dark .prose-custom tbody tr:hover {
   background-color: #111113;
+}
+
+/* Walkthrough tables must not inherit the generic table-scroll spacing/overflow. */
+.prose-custom .code-walkthrough .table-scroll {
+  height: var(--walkthrough-code-height, auto);
+  min-height: 0;
+  max-height: var(--walkthrough-code-height, none);
+  margin: 0;
+  overflow: auto;
+}
+
+.prose-custom .code-walkthrough .table-scroll table {
+  margin: 0;
+}
+
+.prose-custom .code-walkthrough .code-walkthrough-table-scroll {
+  display: block !important;
+  box-sizing: border-box !important;
+  height: var(--walkthrough-code-height, auto) !important;
+  max-height: var(--walkthrough-code-height, none) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: auto !important;
 }
 
 /* -- Horizontal rules -- */

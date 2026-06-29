@@ -8,33 +8,33 @@ import { cn } from "@/lib/utils";
 
 const STEPS = [
   {
-    title: "Normal Call Still Comes First",
-    desc: "The runtime starts with a regular LLM call and only enters recovery when a specific failure appears.",
+    title: "正常调用仍然优先",
+    desc: "运行时从普通 LLM 调用开始，只有出现特定失败时才进入恢复路径。",
     mode: "normal",
   },
   {
-    title: "max_tokens Means Output Was Cut Off",
-    desc: "First recovery is to retry with a larger budget before adding any synthetic continuation message.",
+    title: "max_tokens 表示输出被截断",
+    desc: "第一步恢复是提高输出预算并重试，而不是立刻追加人造续写消息。",
     mode: "max-tokens",
   },
   {
-    title: "prompt_too_long Means Context Must Shrink",
-    desc: "The runtime performs reactive compact once, then retries the same task with a smaller message list.",
+    title: "prompt_too_long 表示 Context 必须缩小",
+    desc: "运行时先做一次 reactive compact，再用更小的消息列表重试同一任务。",
     mode: "prompt-too-long",
   },
   {
-    title: "429 Means Wait, Then Retry",
-    desc: "Rate limits use exponential backoff with jitter so retries do not stampede the provider.",
+    title: "429 表示先等再重试",
+    desc: "限流使用带抖动的指数退避，避免重试请求同时冲向服务商。",
     mode: "rate-limit",
   },
   {
-    title: "Repeated 529 Can Switch Models",
-    desc: "Provider overload increments RecoveryState and can move to a fallback model after repeated failures.",
+    title: "连续 529 可以切换模型",
+    desc: "服务过载会更新 RecoveryState，连续失败后可以切到备用模型。",
     mode: "overloaded",
   },
   {
-    title: "Recovered Calls Return to the Loop",
-    desc: "Each recovery path is bounded, inspectable, and eventually returns to the normal tool loop or exits cleanly.",
+    title: "恢复后回到循环",
+    desc: "每条恢复路径都有上限、可检查，最后回到正常 Tool loop 或清楚退出。",
     mode: "summary",
   },
 ] as const;
@@ -43,33 +43,33 @@ const CASES = [
   {
     id: "max-tokens",
     label: "max_tokens",
-    symptom: "model stopped mid-answer",
-    action: "8K -> 64K, retry same request",
-    state: "token escalated once",
+    symptom: "模型回答到一半停下",
+    action: "8K -> 64K，重试同一请求",
+    state: "token 已升级一次",
     tone: "amber",
   },
   {
     id: "prompt-too-long",
     label: "prompt_too_long",
-    symptom: "context too large",
-    action: "reactive_compact(messages), retry once",
-    state: "compact retry used",
+    symptom: "Context 太大",
+    action: "reactive_compact(messages)，重试一次",
+    state: "已使用压缩重试",
     tone: "orange",
   },
   {
     id: "rate-limit",
     label: "429",
-    symptom: "rate limited",
-    action: "backoff + jitter, max 10 retries",
-    state: "retry attempt counted",
+    symptom: "被限流",
+    action: "退避 + 抖动，最多重试 10 次",
+    state: "已记录重试次数",
     tone: "blue",
   },
   {
     id: "overloaded",
     label: "529",
-    symptom: "provider overloaded",
-    action: "backoff; 3 consecutive -> fallback model",
-    state: "consecutive_529 tracked",
+    symptom: "服务商过载",
+    action: "退避；连续 3 次 -> 备用模型",
+    state: "已追踪连续 529",
     tone: "red",
   },
 ] as const;
@@ -163,10 +163,10 @@ function CaseCard({
 
 function RecoveryStatePanel({ mode }: { mode: StepMode }) {
   const values = {
-    token: mode === "max-tokens" || mode === "summary" ? "64K used" : "8K",
-    compact: mode === "prompt-too-long" || mode === "summary" ? "used once" : "unused",
-    retry: mode === "rate-limit" || mode === "overloaded" || mode === "summary" ? "counting" : "0",
-    model: mode === "overloaded" ? "fallback ready" : "primary",
+    token: mode === "max-tokens" || mode === "summary" ? "已使用 64K" : "8K",
+    compact: mode === "prompt-too-long" || mode === "summary" ? "已使用一次" : "未使用",
+    retry: mode === "rate-limit" || mode === "overloaded" || mode === "summary" ? "计数中" : "0",
+    model: mode === "overloaded" ? "备用模型就绪" : "主模型",
   };
 
   return (
@@ -192,9 +192,9 @@ function ActionPanel({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("rounded-xl border p-4", toneClass("emerald"))}>
         <div className="mb-2 flex items-center gap-2 text-base font-semibold">
           <ShieldCheck size={17} />
-          normal tool loop
+          正常 Tool loop
         </div>
-        <div className="text-sm leading-relaxed">LLM succeeds, tool_use continues as usual.</div>
+        <div className="text-sm leading-relaxed">LLM 调用成功，tool_use 像平常一样继续。</div>
       </motion.div>
     );
   }
@@ -204,13 +204,13 @@ function ActionPanel({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("space-y-3 rounded-xl border p-4", toneClass("amber"))}>
         <div className="flex items-center gap-2 text-base font-semibold">
           <Gauge size={17} />
-          escalate output budget
+          升级输出预算
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
-          <CodePill label="before" value="max_tokens=8000" />
-          <CodePill label="retry" value="max_tokens=64000" />
+          <CodePill label="之前" value="max_tokens=8000" />
+          <CodePill label="重试" value="max_tokens=64000" />
         </div>
-        <div className="text-sm leading-relaxed">No fake "continue" user message on the first escalation.</div>
+        <div className="text-sm leading-relaxed">第一次升级时不追加假的“继续”用户消息。</div>
       </motion.div>
     );
   }
@@ -220,10 +220,10 @@ function ActionPanel({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("space-y-3 rounded-xl border p-4", toneClass("orange"))}>
         <div className="flex items-center gap-2 text-base font-semibold">
           <History size={17} />
-          shrink context, retry once
+          缩小 Context，重试一次
         </div>
-        <CodePill label="recovery" value="messages = reactive_compact(messages)" />
-        <div className="text-sm leading-relaxed">If it is still too long after compact, exit cleanly instead of looping forever.</div>
+        <CodePill label="恢复" value="messages = reactive_compact(messages)" />
+        <div className="text-sm leading-relaxed">如果压缩后仍然太长，就清楚退出，而不是无限循环。</div>
       </motion.div>
     );
   }
@@ -233,14 +233,14 @@ function ActionPanel({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("space-y-3 rounded-xl border p-4", toneClass("blue"))}>
         <div className="flex items-center gap-2 text-base font-semibold">
           <TimerReset size={17} />
-          exponential backoff
+          指数退避
         </div>
         <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
           {["0.5s", "1s", "2s"].map((delay) => (
-            <div key={delay} className="rounded bg-white/70 px-2 py-2 dark:bg-zinc-950/30">{delay} + jitter</div>
+            <div key={delay} className="rounded bg-white/70 px-2 py-2 dark:bg-zinc-950/30">{delay} + 抖动</div>
           ))}
         </div>
-        <div className="text-sm leading-relaxed">Wait before retrying so the provider has time to recover.</div>
+        <div className="text-sm leading-relaxed">重试前先等待，让服务商有时间恢复。</div>
       </motion.div>
     );
   }
@@ -250,10 +250,10 @@ function ActionPanel({ mode }: { mode: StepMode }) {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("space-y-3 rounded-xl border p-4", toneClass("red"))}>
         <div className="flex items-center gap-2 text-base font-semibold">
           <RotateCcw size={17} />
-          fallback model path
+          备用模型路径
         </div>
-        <CodePill label="state" value="consecutive_529 >= 3" />
-        <CodePill label="action" value="current_model = FALLBACK_MODEL_ID" />
+        <CodePill label="状态" value="consecutive_529 >= 3" />
+        <CodePill label="动作" value="current_model = FALLBACK_MODEL_ID" />
       </motion.div>
     );
   }
@@ -269,9 +269,9 @@ function ActionPanel({ mode }: { mode: StepMode }) {
       <div className={cn("rounded-xl border p-4", toneClass("emerald"))}>
         <div className="mb-2 flex items-center gap-2 text-base font-semibold">
           <Repeat2 size={17} />
-          continue or exit cleanly
+          继续或清楚退出
         </div>
-        <div className="text-sm leading-relaxed">Every path has a limit, then returns to the normal loop or stops with an explicit error.</div>
+        <div className="text-sm leading-relaxed">每条路径都有上限，然后回到正常循环，或带着明确错误停止。</div>
       </div>
     </motion.div>
   );
@@ -295,18 +295,18 @@ export default function ErrorRecoveryVisualization({ title }: { title?: string }
 
   return (
     <section className="min-h-[500px] space-y-4">
-      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{title || "Error Recovery Paths"}</h2>
+      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{title || "错误恢复路径"}</h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="grid gap-3 xl:grid-cols-[1fr_0.9fr_1fr]">
-          <Surface title="Failure inbox" icon={<Activity size={20} />} active={mode !== "normal"}>
+          <Surface title="失败收件箱" icon={<Activity size={20} />} active={mode !== "normal"}>
             <div className="space-y-2">
               <div className={cn("rounded-lg border p-3", toneClass("emerald", mode === "normal"))}>
                 <div className="mb-1 flex items-center gap-2 text-sm font-semibold">
                   <ShieldCheck size={15} />
-                  success
+                  成功
                 </div>
-                <div className="text-sm leading-relaxed">No recovery needed; continue to tool loop.</div>
+                <div className="text-sm leading-relaxed">不需要恢复，继续进入 Tool loop。</div>
               </div>
               {CASES.map((item) => (
                 <CaseCard key={item.id} item={item} active={active === item.id || isSummary} muted={active !== null && active !== item.id && !isSummary} />
@@ -318,7 +318,7 @@ export default function ErrorRecoveryVisualization({ title }: { title?: string }
             <RecoveryStatePanel mode={mode} />
           </Surface>
 
-          <Surface title="Recovery action" icon={<Repeat2 size={20} />} active>
+          <Surface title="恢复动作" icon={<Repeat2 size={20} />} active>
             <AnimatePresence mode="wait">
               <ActionPanel key={mode} mode={mode} />
             </AnimatePresence>
@@ -326,7 +326,7 @@ export default function ErrorRecoveryVisualization({ title }: { title?: string }
         </div>
 
         <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-300">
-          Beginner rule: do not blindly retry; classify the failure, run the smallest recovery, and track whether that recovery was already used.
+          新手规则：不要盲目重试；先分类失败，运行最小恢复动作，并记录这个恢复是否已经用过。
         </div>
 
         <StepControls

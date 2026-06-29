@@ -1,48 +1,48 @@
 {
   "version": "s12",
   "title": "Task System",
-  "description": "A file-persisted task graph tracks status, ownership, and blockedBy dependencies.",
+  "description": "文件持久化的任务图会追踪状态、负责人和 blockedBy 依赖。",
   "steps": [
     {
       "type": "user_message",
-      "content": "Break the release into tasks and block deployment until tests pass.",
-      "annotation": "The user asks for durable multi-step coordination."
+      "content": "把发布拆成任务，并且在测试通过前阻塞部署。",
+      "annotation": "用户要求的是可持久化的多步骤协作。"
     },
     {
       "type": "tool_call",
       "toolName": "create_task",
-      "content": "{\"subject\":\"Run tests\"}",
-      "annotation": "Tasks are created as JSON files under .tasks/."
+      "content": "{\"subject\":\"运行测试\"}",
+      "annotation": "任务会作为 JSON 文件创建在 .tasks/ 下。"
     },
     {
       "type": "tool_call",
       "toolName": "create_task",
-      "content": "{\"subject\":\"Deploy release\",\"blockedBy\":[\"task_tests\"]}",
-      "annotation": "blockedBy encodes dependency ordering."
+      "content": "{\"subject\":\"部署发布\",\"blockedBy\":[\"task_tests\"]}",
+      "annotation": "blockedBy 表达依赖顺序。"
     },
     {
       "type": "tool_call",
       "toolName": "claim_task",
       "content": "{\"task_id\":\"task_deploy\",\"owner\":\"agent\"}",
-      "annotation": "The claim fails until dependencies are complete."
+      "annotation": "依赖完成前，认领会失败。"
     },
     {
       "type": "tool_result",
       "toolName": "claim_task",
-      "content": "Blocked by: [\"task_tests\"]",
-      "annotation": "The task graph prevents premature work."
+      "content": "被阻塞： [\"task_tests\"]",
+      "annotation": "任务图会阻止过早开工。"
     },
     {
       "type": "tool_call",
       "toolName": "complete_task",
       "content": "{\"task_id\":\"task_tests\"}",
-      "annotation": "Completing a dependency can unblock downstream tasks."
+      "annotation": "完成依赖后，下游任务可能被解锁。"
     },
     {
       "type": "tool_result",
       "toolName": "complete_task",
-      "content": "Completed task_tests\nUnblocked: Deploy release",
-      "annotation": "The harness reports newly available work."
+      "content": "已完成 task_tests\n已解锁：部署发布",
+      "annotation": "Harness 会报告刚刚变成可执行的工作。"
     }
   ]
 }

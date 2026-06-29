@@ -17,41 +17,41 @@ interface TaskCard {
 
 const STEPS = [
   {
-    title: "Tasks Become Files",
-    desc: "The agent writes work as task cards on disk, so the plan survives compaction and restarts.",
+    title: "任务变成文件",
+    desc: "Agent 把工作写成磁盘上的任务卡片，所以计划能跨压缩和重启保留。",
   },
   {
-    title: "Find the First Ready Card",
-    desc: "A task with no blockers is ready immediately. Everything else waits visibly.",
+    title: "找到第一张可执行卡片",
+    desc: "没有阻塞项的任务可以立刻开始，其它任务会清楚地等待。",
   },
   {
-    title: "Work One Card",
-    desc: "The active task is not just text in the model's head; it has a durable status.",
+    title: "处理一张卡片",
+    desc: "进行中的任务不只是模型脑中的文本，它有持久化状态。",
   },
   {
-    title: "Completion Unlocks Dependents",
-    desc: "When T1 is done, the cards that depended on T1 become ready.",
+    title: "完成后解锁下游",
+    desc: "T1 完成后，依赖 T1 的卡片会变成可执行。",
   },
   {
-    title: "Parallel Ready Work",
-    desc: "T2 and T3 can run independently, while T4 still waits for both.",
+    title: "并行可执行工作",
+    desc: "T2 和 T3 可以独立运行，而 T4 仍要等待它们都完成。",
   },
   {
-    title: "All Blockers Cleared",
-    desc: "Once T2 and T3 are done, T4 moves from waiting to active.",
+    title: "所有阻塞已清除",
+    desc: "T2 和 T3 完成后，T4 从等待变成进行中。",
   },
   {
-    title: "Board Resolved",
-    desc: "Every card reaches done. The dependency idea is visible without drawing a graph.",
+    title: "看板完成",
+    desc: "每张卡片都到达 done。即使不画图，依赖关系也清晰可见。",
   },
 ] as const;
 
 const BASE_TASKS = [
-  { id: "T1", title: "Set up database", blockers: [] },
-  { id: "T2", title: "Add API routes", blockers: ["T1"] },
-  { id: "T3", title: "Build auth module", blockers: ["T1"] },
-  { id: "T4", title: "Integration pass", blockers: ["T2", "T3"] },
-  { id: "T5", title: "Deploy", blockers: ["T4"] },
+  { id: "T1", title: "设置数据库", blockers: [] },
+  { id: "T2", title: "添加 API 路由", blockers: ["T1"] },
+  { id: "T3", title: "构建 auth 模块", blockers: ["T1"] },
+  { id: "T4", title: "集成检查", blockers: ["T2", "T3"] },
+  { id: "T5", title: "部署", blockers: ["T4"] },
 ];
 
 function taskStatus(id: string, step: number): Status {
@@ -104,12 +104,12 @@ function TaskCardView({ task }: { task: TaskCard }) {
       <div className="mt-2 flex flex-wrap gap-1">
         {task.blockers.length === 0 ? (
           <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] dark:bg-zinc-950/30">
-            no blockers
+            无阻塞
           </span>
         ) : (
           task.blockers.map((blocker) => (
             <span key={blocker} className="rounded bg-white/70 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-950/30">
-              waits for {blocker}
+              等待 {blocker}
             </span>
           ))
         )}
@@ -145,7 +145,7 @@ function Lane({
               exit={{ opacity: 0 }}
               className="rounded-md border border-dashed border-zinc-300 px-3 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
             >
-              empty
+              空
             </motion.div>
           )}
         </AnimatePresence>
@@ -168,32 +168,32 @@ export default function TaskSystem({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Task Board Dependencies"}
+        {title || "任务看板依赖"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="mb-4 flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/70 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
             <FileJson size={16} />
-            .tasks board
+            .tasks 看板
           </div>
           <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <div className="rounded bg-zinc-100 px-2 py-1 dark:bg-zinc-900">{blocked.length} blocked</div>
-            <div className="rounded bg-amber-100 px-2 py-1 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{ready.length} ready</div>
-            <div className="rounded bg-blue-100 px-2 py-1 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{active.length} active</div>
-            <div className="rounded bg-emerald-100 px-2 py-1 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{done.length} done</div>
+            <div className="rounded bg-zinc-100 px-2 py-1 dark:bg-zinc-900">{blocked.length} 阻塞</div>
+            <div className="rounded bg-amber-100 px-2 py-1 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{ready.length} 可执行</div>
+            <div className="rounded bg-blue-100 px-2 py-1 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{active.length} 进行中</div>
+            <div className="rounded bg-emerald-100 px-2 py-1 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{done.length} 已完成</div>
           </div>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-4">
-          <Lane title="Waiting" subtitle="blocked by another card" tasks={blocked} />
-          <Lane title="Ready" subtitle="can be claimed now" tasks={ready} />
-          <Lane title="Working" subtitle="currently in progress" tasks={active} />
-          <Lane title="Done" subtitle="unlocks dependents" tasks={done} />
+          <Lane title="等待" subtitle="被其它卡片阻塞" tasks={blocked} />
+          <Lane title="可执行" subtitle="现在可以认领" tasks={ready} />
+          <Lane title="工作中" subtitle="当前正在进行" tasks={active} />
+          <Lane title="已完成" subtitle="解锁下游任务" tasks={done} />
         </div>
 
         <div className="mt-4 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
-          A dependency is not an arrow students must trace. It is a visible blocker badge on the card.
+          依赖关系不一定要靠学生追箭头理解。它也可以是卡片上清晰可见的阻塞标签。
         </div>
 
         <StepControls

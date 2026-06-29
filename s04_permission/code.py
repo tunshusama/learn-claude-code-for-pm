@@ -1,209 +1,251 @@
 #!/usr/bin/env python3
-"""
-s04: Permission System
+"""s04: permission gate before tool execution."""
 
-Three gates inserted before tool execution:
-
-    Gate 1: Hard deny list (rm -rf /, sudo, ...)
-    Gate 2: Rule matching (write outside workspace? destructive cmd?)
-    Gate 3: User approval (pause and wait for confirmation)
-
-    +-------+    +--------+    +--------+    +--------+    +------+
-    | Tool  | -> | Gate 1 | -> | Gate 2 | -> | Gate 3 | -> | Exec |
-    | call  |    | deny?  |    | match? |    | allow? |    |      |
-    +-------+    +--------+    +--------+    +--------+    +------+
-         |            |             |             |
-         v            v             v             v
-      (normal)     (blocked)    (ask user)   (user says no?)
-
-Only one line added to the agent loop:
-
-    if not check_permission(block):
-        continue
-
-Builds on s03 (multi-tool). Usage:
-
-    python s04_permission/code.py
-    Needs: pip install anthropic python-dotenv + ANTHROPIC_API_KEY in .env
-"""
-
-import os, subprocess
+import glob
+import os
+import subprocess
 from pathlib import Path
-
-try:
-    import readline
-    readline.parse_and_bind('set bind-tty-special-chars off')
-    readline.parse_and_bind('set input-meta on')
-    readline.parse_and_bind('set output-meta on')
-    readline.parse_and_bind('set convert-meta off')
-except ImportError:
-    pass
+from typing import Any, Callable, Optional
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
+
 load_dotenv(override=True)
+
 if os.getenv("ANTHROPIC_BASE_URL"):
     os.environ.pop("ANTHROPIC_AUTH_TOKEN", None)
 
 WORKDIR = Path.cwd()
 client = Anthropic(base_url=os.getenv("ANTHROPIC_BASE_URL"))
-MODEL = os.environ["MODEL_ID"]
+MODEL = os.getenv("MODEL_ID")
+SYSTEM = (
+    f"你是运行在 {WORKDIR} 的教学版 coding agent。"
+    "优先使用专用文件工具完成读写查找任务；需要 shell 时再使用 bash。"
+    "工具真正执行前会经过 Harness 的权限判断。"
+    "行动后用简洁中文汇报结果。"
+)
 
-SYSTEM = f"You are a coding agent at {WORKDIR}. All destructive operations require user approval."
+
+def require_setup() -> None:
+    missing = []
+    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    if not api_key or api_key.endswith("xxx") or api_key.startswith("your_"):
+        missing.append("ANTHROPIC_API_KEY")
+    if not MODEL:
+        missing.append("MODEL_ID")
+    if missing:
+        names = ", ".join(missing)
+        raise SystemExit(
+            f"请先在项目根目录的 .env 里配置 {names}，然后重新运行本课。"
+        )
 
 
-# ═══════════════════════════════════════════════════════════
-#  FROM s03 (unchanged): Tool Implementations
-# ═══════════════════════════════════════════════════════════
+def safe_path(path: str) -> Path:
+    file_path = (WORKDIR / path).resolve()
+    if not file_path.is_relative_to(WORKDIR):
+        raise ValueError(f"路径不能离开当前项目目录: {path}")
+    return file_path
 
-def safe_path(p: str) -> Path:
-    path = (WORKDIR / p).resolve()
-    if not path.is_relative_to(WORKDIR):
-        raise ValueError(f"Path escapes workspace: {p}")
-    return path
+
+def path_escapes_workspace(path: str) -> bool:
+    return not (WORKDIR / path).resolve().is_relative_to(WORKDIR)
 
 
 def run_bash(command: str) -> str:
     try:
-        r = subprocess.run(command, shell=True, cwd=WORKDIR,
-                           capture_output=True, text=True, timeout=120)
-        out = (r.stdout + r.stderr).strip()
-        return out[:50000] if out else "(no output)"
+        result = subprocess.run(
+            command,
+            shell=True,
+            cwd=WORKDIR,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=120,
+        )
+        output = (result.stdout + result.stderr).strip()
+        return output[:50000] if output else "(no output)"
     except subprocess.TimeoutExpired:
         return "Error: Timeout (120s)"
+    except (FileNotFoundError, OSError) as error:
+        return f"Error: {error}"
 
 
-def run_read(path: str, limit: int | None = None) -> str:
+def run_read(path: str, limit: Optional[int] = None) -> str:
     try:
-        lines = safe_path(path).read_text().splitlines()
+        lines = safe_path(path).read_text(encoding="utf-8").splitlines()
         if limit and limit < len(lines):
-            lines = lines[:limit] + [f"... ({len(lines) - limit} more lines)"]
+            hidden = len(lines) - limit
+            lines = lines[:limit] + [f"... ({hidden} more lines)"]
         return "\n".join(lines)
-    except Exception as e:
-        return f"Error: {e}"
+    except Exception as error:
+        return f"Error: {error}"
 
 
 def run_write(path: str, content: str) -> str:
     try:
         file_path = safe_path(path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.write_text(content)
-        return f"Wrote {len(content)} bytes to {path}"
-    except Exception as e:
-        return f"Error: {e}"
+        file_path.write_text(content, encoding="utf-8")
+        return f"Wrote {len(content)} characters to {path}"
+    except Exception as error:
+        return f"Error: {error}"
 
 
 def run_edit(path: str, old_text: str, new_text: str) -> str:
     try:
         file_path = safe_path(path)
-        text = file_path.read_text()
+        text = file_path.read_text(encoding="utf-8")
         if old_text not in text:
             return f"Error: text not found in {path}"
-        file_path.write_text(text.replace(old_text, new_text, 1))
+        file_path.write_text(text.replace(old_text, new_text, 1), encoding="utf-8")
         return f"Edited {path}"
-    except Exception as e:
-        return f"Error: {e}"
+    except Exception as error:
+        return f"Error: {error}"
 
 
 def run_glob(pattern: str) -> str:
-    import glob as g
     try:
-        results = []
-        for match in g.glob(pattern, root_dir=WORKDIR):
+        matches = []
+        for match in glob.glob(pattern, root_dir=WORKDIR, recursive=True):
             if (WORKDIR / match).resolve().is_relative_to(WORKDIR):
-                results.append(match)
-        return "\n".join(results) if results else "(no matches)"
-    except Exception as e:
-        return f"Error: {e}"
+                matches.append(match)
+        return "\n".join(sorted(matches)) if matches else "(no matches)"
+    except Exception as error:
+        return f"Error: {error}"
 
-
-# ═══════════════════════════════════════════════════════════
-#  FROM s03 (unchanged): Tool Definitions & Dispatch
-# ═══════════════════════════════════════════════════════════
 
 TOOLS = [
-    {"name": "bash", "description": "Run a shell command.",
-     "input_schema": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"]}},
-    {"name": "read_file", "description": "Read file contents.",
-     "input_schema": {"type": "object", "properties": {"path": {"type": "string"}, "limit": {"type": "integer"}}, "required": ["path"]}},
-    {"name": "write_file", "description": "Write content to a file.",
-     "input_schema": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"]}},
-    {"name": "edit_file", "description": "Replace exact text in a file once.",
-     "input_schema": {"type": "object", "properties": {"path": {"type": "string"}, "old_text": {"type": "string"}, "new_text": {"type": "string"}}, "required": ["path", "old_text", "new_text"]}},
-    {"name": "glob", "description": "Find files matching a glob pattern.",
-     "input_schema": {"type": "object", "properties": {"pattern": {"type": "string"}}, "required": ["pattern"]}},
+    {
+        "name": "bash",
+        "description": "Run a shell command.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"command": {"type": "string"}},
+            "required": ["command"],
+        },
+    },
+    {
+        "name": "read_file",
+        "description": "Read a file from the current project.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "limit": {"type": "integer"},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "name": "write_file",
+        "description": "Write text to a file in the current project.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "content": {"type": "string"},
+            },
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "name": "edit_file",
+        "description": "Replace exact text in a file once.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "old_text": {"type": "string"},
+                "new_text": {"type": "string"},
+            },
+            "required": ["path", "old_text", "new_text"],
+        },
+    },
+    {
+        "name": "glob",
+        "description": "Find project files matching a glob pattern.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"pattern": {"type": "string"}},
+            "required": ["pattern"],
+        },
+    },
 ]
 
-TOOL_HANDLERS = {
-    "bash": run_bash, "read_file": run_read, "write_file": run_write,
-    "edit_file": run_edit, "glob": run_glob,
+TOOL_HANDLERS: dict[str, Callable[..., str]] = {
+    "bash": run_bash,
+    "read_file": run_read,
+    "write_file": run_write,
+    "edit_file": run_edit,
+    "glob": run_glob,
 }
 
 
-# ═══════════════════════════════════════════════════════════
-#  NEW in s04: Three-Gate Permission Pipeline
-# ═══════════════════════════════════════════════════════════
-
-# Gate 1: Hard deny list — always forbidden
 DENY_LIST = ["rm -rf /", "sudo", "shutdown", "reboot", "mkfs", "dd if=", "> /dev/sda"]
+DESTRUCTIVE_COMMAND_HINTS = ["rm ", "mv ", "chmod 777", "> /etc/", "curl ", "wget "]
 
-def check_deny_list(command: str) -> str | None:
+
+def check_deny_list(command: str) -> Optional[str]:
     for pattern in DENY_LIST:
         if pattern in command:
-            return f"Blocked: '{pattern}' is on the deny list"
+            return f"Blocked: '{pattern}' is on the deny list."
     return None
 
 
-# Gate 2: Rule matching — context-dependent checks
-PERMISSION_RULES = [
-    {"tools": ["write_file", "edit_file"],
-     "check": lambda args: not (WORKDIR / args.get("path", "")).resolve().is_relative_to(WORKDIR),
-     "message": "Writing outside workspace"},
-    {"tools": ["bash"],
-     "check": lambda args: any(kw in args.get("command", "") for kw in ["rm ", "> /etc/", "chmod 777"]),
-     "message": "Potentially destructive command"},
-]
+def check_rules(tool_name: str, tool_input: dict[str, Any]) -> Optional[str]:
+    if tool_name in ("write_file", "edit_file"):
+        path = str(tool_input.get("path", ""))
+        if path_escapes_workspace(path):
+            return f"Writing outside the workspace: {path}"
 
-def check_rules(tool_name: str, args: dict) -> str | None:
-    for rule in PERMISSION_RULES:
-        if tool_name in rule["tools"] and rule["check"](args):
-            return rule["message"]
+    if tool_name == "bash":
+        command = str(tool_input.get("command", ""))
+        if any(hint in command for hint in DESTRUCTIVE_COMMAND_HINTS):
+            return f"Potentially destructive shell command: {command}"
+
     return None
 
 
-# Gate 3: User approval — wait for confirmation after rule match
-def ask_user(tool_name: str, args: dict, reason: str) -> str:
-    print(f"\n\033[33m⚠  {reason}\033[0m")
-    print(f"   Tool: {tool_name}({args})")
-    choice = input("   Allow? [y/N] ").strip().lower()
+def ask_user(tool_name: str, tool_input: dict[str, Any], reason: str) -> str:
+    print(f"\n\033[33m权限确认: {reason}\033[0m")
+    print(f"工具: {tool_name}")
+    print(f"参数: {tool_input}")
+    choice = input("允许执行吗？[y/N] ").strip().lower()
     return "allow" if choice in ("y", "yes") else "deny"
 
 
-# Pipeline: all three gates chained
-def check_permission(block) -> bool:
-    if block.name == "bash":
-        reason = check_deny_list(block.input.get("command", ""))
+def check_permission(tool_name: str, tool_input: dict[str, Any]) -> tuple[bool, str]:
+    if tool_name == "bash":
+        reason = check_deny_list(str(tool_input.get("command", "")))
         if reason:
-            print(f"\n\033[31m⛔ {reason}\033[0m")
-            return False
-    reason = check_rules(block.name, block.input)
+            return False, reason
+
+    reason = check_rules(tool_name, tool_input)
     if reason:
-        decision = ask_user(block.name, block.input, reason)
+        decision = ask_user(tool_name, tool_input, reason)
         if decision == "deny":
-            return False
-    return True
+            return False, f"Permission denied by user: {reason}"
+
+    return True, "Permission allowed."
 
 
-# ═══════════════════════════════════════════════════════════
-#  agent_loop — same as s03, with check_permission() inserted
-# ═══════════════════════════════════════════════════════════
+def dispatch_tool(name: str, tool_input: dict[str, Any]) -> str:
+    handler = TOOL_HANDLERS.get(name)
+    if handler is None:
+        return f"Error: unknown tool {name}"
+    return handler(**tool_input)
 
-def agent_loop(messages: list):
+
+def agent_loop(messages: list[dict[str, Any]]) -> None:
     while True:
         response = client.messages.create(
-            model=MODEL, system=SYSTEM, messages=messages,
-            tools=TOOLS, max_tokens=8000,
+            model=MODEL,
+            system=SYSTEM,
+            messages=messages,
+            tools=TOOLS,
+            max_tokens=8000,
         )
         messages.append({"role": "assistant", "content": response.content})
 
@@ -215,37 +257,60 @@ def agent_loop(messages: list):
             if block.type != "tool_use":
                 continue
 
-            print(f"\033[36m> {block.name}\033[0m")
+            tool_input = dict(block.input)
+            print(f"\033[33m工具: {block.name} {tool_input}\033[0m")
 
-            # s04 change: run through permission pipeline before executing
-            if not check_permission(block):
-                results.append({"type": "tool_result", "tool_use_id": block.id,
-                                "content": "Permission denied."})
+            allowed, reason = check_permission(block.name, tool_input)
+            if not allowed:
+                print(f"\033[31m拦截: {reason}\033[0m\n")
+                results.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": reason,
+                    }
+                )
                 continue
 
-            handler = TOOL_HANDLERS.get(block.name)
-            output = handler(**block.input) if handler else f"Unknown: {block.name}"
-            print(str(output)[:200])
-            results.append({"type": "tool_result", "tool_use_id": block.id, "content": output})
+            output = dispatch_tool(block.name, tool_input)
+            print(f"结果: {output[:200]}\n")
+            results.append(
+                {
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": output,
+                }
+            )
 
         messages.append({"role": "user", "content": results})
 
 
-if __name__ == "__main__":
-    print("s04: Permission")
-    print("输入问题，回车发送。输入 q 退出。\n")
+def print_final_text(messages: list[dict[str, Any]]) -> None:
+    content = messages[-1]["content"]
+    if isinstance(content, str):
+        print(content)
+        return
+    for block in content:
+        if getattr(block, "type", None) == "text":
+            print(block.text)
 
-    history = []
+
+if __name__ == "__main__":
+    require_setup()
+    print("s04: Permission")
+    print("输入 /exit 退出。试试读文件、创建文件、删除文件、写入 /etc。\n")
+
+    history: list[dict[str, Any]] = []
     while True:
-        try:
-            query = input("\033[36ms04 >> \033[0m")
-        except (EOFError, KeyboardInterrupt):
+        user_input = input("你: ").strip()
+        if user_input == "/exit":
+            print("再见！")
             break
-        if query.strip().lower() in ("q", "exit", ""):
-            break
-        history.append({"role": "user", "content": query})
+        if not user_input:
+            continue
+
+        history.append({"role": "user", "content": user_input})
         agent_loop(history)
-        for block in history[-1]["content"]:
-            if getattr(block, "type", None) == "text":
-                print(block.text)
+        print("模型: ", end="")
+        print_final_text(history)
         print()

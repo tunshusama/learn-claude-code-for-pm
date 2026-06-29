@@ -1,34 +1,34 @@
 {
   "version": "s07",
   "title": "Skills",
-  "description": "The agent sees a cheap skill catalog first, then loads full SKILL.md content only when needed.",
+  "description": "Agent 先看到轻量技能目录，只有需要时才加载完整 SKILL.md 内容。",
   "steps": [
     {
       "type": "system_event",
-      "content": "build_system: skills available: agent-builder, code-review, mcp-builder, pdf",
-      "annotation": "Startup scans the skills directory and injects short descriptions into the system prompt."
+      "content": "build_system: 可用技能：agent-builder、code-review、mcp-builder、pdf",
+      "annotation": "启动时扫描 skills 目录，并把短描述注入 System Prompt。"
     },
     {
       "type": "user_message",
-      "content": "Review this change like a code reviewer.",
-      "annotation": "The user asks for specialized behavior."
+      "content": "像代码审查员一样 review 这次改动。",
+      "annotation": "用户要求的是专门化行为。"
     },
     {
       "type": "tool_call",
       "toolName": "load_skill",
       "content": "{\"name\":\"code-review\"}",
-      "annotation": "The model chooses to load the full skill on demand."
+      "annotation": "模型选择按需加载完整技能。"
     },
     {
       "type": "tool_result",
       "toolName": "load_skill",
-      "content": "# Code Review Skill\nFocus on bugs, regressions, and missing tests...",
-      "annotation": "Full skill text is injected as a tool result, not permanently in the system prompt."
+      "content": "# Code Review Skill\n重点关注 bug、回归风险和缺失测试……",
+      "annotation": "完整技能文本作为 tool_result 注入，而不是永久放进 System Prompt。"
     },
     {
       "type": "assistant_text",
-      "content": "I'll review the diff for behavioral risks first, then note test gaps.",
-      "annotation": "The loaded skill guides the next response."
+      "content": "我会先审查 diff 里的行为风险，再指出测试缺口。",
+      "annotation": "加载后的 Skill 会引导下一次回答。"
     }
   ]
 }
