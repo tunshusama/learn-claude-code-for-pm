@@ -391,20 +391,6 @@ body {
   border-top-color: #27272a;
 }
 
-.glossary-panel {
-  position: fixed;
-  top: 7rem;
-  right: 2rem;
-  width: 18rem;
-  z-index: 20;
-}
-
-@media (max-width: 1535px) {
-  .glossary-panel {
-    display: none;
-  }
-}
-
 /* -- Hero callout (first blockquote) -- */
 
 .prose-custom blockquote.hero-callout {

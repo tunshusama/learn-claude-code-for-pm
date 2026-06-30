@@ -465,7 +465,6 @@ function postProcessHtml(
 
 export function DocRenderer({ version }: DocRendererProps) {
   const locale = useLocale();
-  const [activeTerm, setActiveTerm] = useState<string>("Harness");
   const [hoveredTerm, setHoveredTerm] = useState<{
     term: string;
     x: number;
@@ -506,7 +505,6 @@ export function DocRenderer({ version }: DocRendererProps) {
 
   const showGlossaryTerm = (term: string, x: number, y: number) => {
     if (!GLOSSARY[term]) return;
-    setActiveTerm(term);
     setHoveredTerm({ term, x, y });
   };
 
@@ -643,24 +641,6 @@ export function DocRenderer({ version }: DocRendererProps) {
           );
         })}
       </div>
-      {locale === DEFAULT_LOCALE && (
-        <aside className="glossary-panel hidden 2xl:block">
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              术语解释
-            </div>
-            <h3 className="mt-2 text-base font-semibold text-zinc-950 dark:text-zinc-50">
-              {GLOSSARY[activeTerm]?.term}
-            </h3>
-            <p className="mt-2 leading-6 text-zinc-600 dark:text-zinc-300">
-              {GLOSSARY[activeTerm]?.definition}
-            </p>
-            <div className="mt-3 rounded-md bg-white p-3 text-xs leading-5 text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400">
-              {GLOSSARY[activeTerm]?.example}
-            </div>
-          </div>
-        </aside>
-      )}
       {locale === DEFAULT_LOCALE && hoveredTerm && GLOSSARY[hoveredTerm.term] && (
         <div
           className="glossary-tooltip"
