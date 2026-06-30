@@ -224,7 +224,7 @@ export default function HooksVisualization({ title }: { title?: string }) {
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-relaxed text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
-          主循环有意保持无聊：它只调用 <span className="font-mono">trigger_hooks(event)</span>，由注册表决定额外运行哪些逻辑。
+          主循环保持最小职责：它只调用 <span className="font-mono">trigger_hooks(event)</span>，由注册表决定额外运行哪些逻辑。
         </div>
 
         <div className="grid gap-3 xl:grid-cols-[1.15fr_0.85fr]">
